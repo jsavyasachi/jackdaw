@@ -80,7 +80,6 @@
               :injections [(require 'io.aviso.logging.setup)]
               :dependencies [[io.aviso/logging "1.0"]
                              [aleph/aleph "0.6.3"]
-                             [org.apache.kafka/kafka-streams-test-utils "3.9.2"]
                              [org.apache.kafka/kafka-clients "3.9.2" :classifier "test"]
                              [org.clojure/test.check "1.1.1"]
                              [org.apache.kafka/kafka_2.13 "3.9.2" :exclusions [com.fasterxml.jackson.core/jackson-core]]
