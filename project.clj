@@ -80,6 +80,10 @@
                              [org.apache.kafka/kafka-clients "4.3.0" :classifier "test"]
                              [org.clojure/test.check "1.1.1"]
                              [org.apache.kafka/kafka_2.13 "4.3.0"]
+                             ;; ships org.apache.kafka.tools.StreamsResetter, used by
+                             ;; reset-application-fixture (Kafka 4.0 moved it out of
+                             ;; kafka_2.13 into the kafka-tools jar).
+                             [org.apache.kafka/kafka-tools "4.3.0"]
                              [lambdaisland/kaocha "1.80.1274"]
                              [lambdaisland/kaocha-cloverage "1.1.89"]
                              [lambdaisland/kaocha-junit-xml "1.17.101"]]}

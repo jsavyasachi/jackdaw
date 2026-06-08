@@ -230,9 +230,8 @@
   "Returns a consumer that will return the supplied items (as ConsumerRecords)
    in response to successive calls of the `poll` method"
   [queue]
+  ;; Kafka 4.0 removed the deprecated Consumer.poll(long); only poll(Duration) remains.
   (reify Consumer
-    (^ConsumerRecords poll [_this ^long ms]
-      (.poll queue ms TimeUnit/MILLISECONDS))
     (^ConsumerRecords poll [_this ^Duration duration]
      (.poll queue (.toMillis duration) TimeUnit/MILLISECONDS))))
 

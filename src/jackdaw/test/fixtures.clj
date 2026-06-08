@@ -185,15 +185,17 @@
 
 (defn default-reset-fn
   [rt args]
-  (.run rt (into-array String args)))
+  ;; Kafka 4.0's org.apache.kafka.tools.StreamsResetter exposes execute(String[])
+  ;; (the old Scala kafka.tools.StreamsResetter had run(String[])).
+  (.execute rt (into-array String args)))
 
 
 (defn- class-exists? [c]
   (resolve-class (.getContextClassLoader (Thread/currentThread)) c))
 
 (defn reset-application-fixture
-  "Returns a fixture that runs the kafka.tools.StreamsResetter with the supplied
-   `reset-args` as parameters"
+  "Returns a fixture that runs the org.apache.kafka.tools.StreamsResetter with the
+   supplied `reset-args` as parameters"
   ([app-config]
    (reset-application-fixture app-config [] default-reset-fn))
 
@@ -202,9 +204,9 @@
 
   ([app-config reset-args reset-fn]
    (fn [t]
-   (if-not (class-exists? 'kafka.tools.StreamsResetter)
-     (throw (RuntimeException. "You must add a dependency on a kafka distrib which ships the kafka.tools.StreamsResetter tool"))
-     (let [rt (.newInstance (clojure.lang.RT/classForName "kafka.tools.StreamsResetter"))
+   (if-not (class-exists? 'org.apache.kafka.tools.StreamsResetter)
+     (throw (RuntimeException. "You must add a dependency on org.apache.kafka/kafka-tools which ships org.apache.kafka.tools.StreamsResetter"))
+     (let [rt (.newInstance (clojure.lang.RT/classForName "org.apache.kafka.tools.StreamsResetter"))
            args (concat ["--application-id" (get app-config "application.id")
                          "--bootstrap-servers" (get app-config "bootstrap.servers")]
                         reset-args)
