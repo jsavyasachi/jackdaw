@@ -2,6 +2,24 @@
 
 ### Unreleased
 
+### [1.3.1] - [2026-06-08]
+
+Runtime Kafka-4.x fixes that the mock (TopologyTestDriver) suite could not
+catch; surfaced by the live-broker integration tests. Anyone on 1.3.0 using a
+real consumer, the test-machine, or a streams uncaught-exception handler should
+upgrade.
+
+- Consumer assignment: a 0ms poll no longer completes the group rebalance under
+  Kafka 4.x, so `seek-to-end`/`seek-to-beginning` and the test-machine's
+  consumer would not position correctly. Added `client/poll-for-assignments`
+  (poll until partitions are assigned) and use it in the eager seeks and the
+  kafka transport.
+- `setUncaughtExceptionHandler`: Kafka 4.0 removed the
+  `Thread.UncaughtExceptionHandler` overload; the streams fixtures now reify
+  `StreamsUncaughtExceptionHandler`.
+- Test infra modernized to a single-node KRaft stack (no ZooKeeper); CI runs the
+  full suite incl. live-broker integration tests on a JDK 17/21 matrix.
+
 ### [1.3.0] - [2026-06-08]
 
 Maintenance fork published as `net.clojars.savya/jackdaw` (the upstream
