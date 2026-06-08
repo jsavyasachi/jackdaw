@@ -38,10 +38,9 @@
   (base-node :node n))
 
 (defmethod describe-node :source [n]
-  (let [topics (map str/trim (-> (.topics ^TopologyDescription$Source n)
-                                 (str/replace "[" "")
-                                 (str/replace "]" "")
-                                 (str/split #",")))]
+  ;; Kafka 4.0 removed TopologyDescription.Source.topics() (a String); use
+  ;; topicSet() which returns the topic names directly as a Set<String>.
+  (let [topics (seq (.topicSet ^TopologyDescription$Source n))]
     (-> (base-node :source n)
         (update :nodes concat (map (fn [t]
                                      {:type :topic

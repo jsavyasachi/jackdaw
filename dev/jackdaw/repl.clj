@@ -119,7 +119,8 @@
   "Takes a topology and streams config and walks the topology to find
   all the user-defined topics."
   [topology streams-config]
-  (->> (jsd/describe-topology (.build (j/streams-builder* topology))
+  (->> (jsd/describe-topology (.build ^org.apache.kafka.streams.StreamsBuilder
+                                      (j/streams-builder* topology))
                               streams-config)
        (map :nodes)
        (reduce concat)

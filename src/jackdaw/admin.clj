@@ -10,7 +10,7 @@
    [jackdaw.data :as jd]
    [manifold.deferred :as d])
   (:import [java.util Collection Properties]
-           [org.apache.kafka.clients.admin AdminClient
+           [org.apache.kafka.clients.admin AdminClient AlterConfigsResult
             DescribeTopicsOptions DescribeClusterOptions DescribeConfigsOptions]))
 
 (set! *warn-on-reflection* true)
@@ -27,7 +27,11 @@
 (def client-impl
   {:alter-topics* (fn [this topics]
                     (d/future
-                      @(.all (.alterConfigs ^AdminClient this topics))))
+                      ;; Kafka 4.0 removed AdminClient.alterConfigs; use the
+                      ;; incremental variant (callers pass a map of
+                      ;; ConfigResource -> Collection<AlterConfigOp>).
+                      @(.all ^AlterConfigsResult
+                             (.incrementalAlterConfigs ^AdminClient this topics))))
    :create-topics* (fn [this topics]
                     (d/future
                       @(.all (.createTopics ^AdminClient this ^Collection topics))))
@@ -36,7 +40,8 @@
                         @(.all (.deleteTopics ^AdminClient this ^Collection topics))))
    :describe-topics* (fn [this topics]
                        (d/future
-                         @(.all (.describeTopics ^AdminClient this ^Collection topics (DescribeTopicsOptions.)))))
+                         ;; Kafka 4.0 removed DescribeTopicsResult.all; use allTopicNames.
+                         @(.allTopicNames (.describeTopics ^AdminClient this ^Collection topics (DescribeTopicsOptions.)))))
    :describe-configs* (fn [this configs]
                         (d/future
                           @(.all (.describeConfigs ^AdminClient this configs (DescribeConfigsOptions.)))))

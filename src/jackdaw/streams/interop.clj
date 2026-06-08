@@ -8,7 +8,7 @@
   (:import [java.util
             Collection]
            [java.util.function
-            Function]
+            Function Consumer]
            [java.util.regex
             Pattern]
            [java.time
@@ -16,12 +16,13 @@
            [org.apache.kafka.streams
             StreamsBuilder]
            [org.apache.kafka.streams.kstream
-            Aggregator Consumed GlobalKTable Grouped Initializer Joined StreamJoined
+            Aggregator Branched BranchedKStream Consumed GlobalKTable Grouped
+            Initializer Joined StreamJoined
             JoinWindows KGroupedStream KGroupedTable KStream KTable
             KeyValueMapper Materialized Merger Predicate Printed Produced
-            Reducer SessionWindowedKStream SessionWindows
+            Reducer Repartitioned SessionWindowedKStream SessionWindows
             Suppressed Suppressed$BufferConfig TimeWindowedKStream ValueJoiner
-            ValueMapper ValueTransformerSupplier Windows ForeachAction TransformerSupplier]
+            ValueMapper Windows ForeachAction]
            [org.apache.kafka.streams.processor.api
             ProcessorSupplier]
            [org.apache.kafka.streams.state Stores]))
@@ -35,6 +36,11 @@
   (if partition-fn
     (Produced/with key-serde value-serde (->FnStreamPartitioner partition-fn))
     (Produced/with key-serde value-serde)))
+
+(defn topic->repartitioned [{:keys [topic-name key-serde value-serde partition-fn]}]
+  (cond-> (Repartitioned/with key-serde value-serde)
+    topic-name (.withName ^String topic-name)
+    partition-fn (.withStreamPartitioner (->FnStreamPartitioner partition-fn))))
 
 (defn topic->grouped [{:keys [key-serde value-serde]}]
   (Grouped/with key-serde value-serde))
@@ -206,9 +212,22 @@
   IKStream
   (branch
     [_ predicate-fns]
-    (mapv clj-kstream
-          (->> (into-array Predicate (mapv predicate predicate-fns))
-               (.branch kstream))))
+    ;; Kafka 4.0 removed KStream.branch(Predicate...). Reproduce its
+    ;; positional-vector result via split()/BranchedKStream, collecting each
+    ;; branch stream (in predicate order) through a Branched consumer.
+    (let [collected (volatile! [])
+          ^BranchedKStream split
+          (clojure.core/reduce
+           (fn [^BranchedKStream bks pred-fn]
+             (.branch bks
+                      ^Predicate (predicate pred-fn)
+                      (Branched/withConsumer
+                       (reify Consumer
+                         (accept [_ ks] (vswap! collected conj ks))))))
+           (.split ^KStream kstream)
+           predicate-fns)]
+      (.noDefaultBranch split)
+      (mapv clj-kstream @collected)))
 
   (flat-map
     [_ key-value-mapper-fn]
@@ -226,9 +245,12 @@
     nil)
 
   (through
-    [_ {:keys [topic-name] :as topic-config}]
+    [_ topic-config]
+    ;; Kafka 4.0 removed KStream.through. Reimplement via repartition (its
+    ;; official replacement): the stream continues downstream through an
+    ;; internally-managed repartition topic rather than the named user topic.
     (clj-kstream
-     (.through kstream topic-name ^Produced (topic->produced topic-config))))
+     (.repartition kstream ^Repartitioned (topic->repartitioned topic-config))))
 
   (to!
     [_ {:keys [topic-name] :as topic-config}]
@@ -337,10 +359,12 @@
 
   (transform
     [_ transformer-supplier-fn state-store-names]
+    ;; Kafka 4.0 removed KStream.transform; route through the Processor API.
     (clj-kstream
-     (.transform ^KStream kstream
-                 ^TransformerSupplier (transformer-supplier transformer-supplier-fn)
-                 ^"[Ljava.lang.String;" (into-array String state-store-names))))
+     (.process ^KStream kstream
+               (transformer-supplier->processor-supplier
+                (transformer-supplier transformer-supplier-fn) false)
+               ^"[Ljava.lang.String;" (into-array String state-store-names))))
 
   (flat-transform
     [this transformer-supplier-fn]
@@ -349,20 +373,23 @@
   (flat-transform
     [_ transformer-supplier-fn state-store-names]
     (clj-kstream
-     (.flatTransform ^KStream kstream
-                     ^TransformerSupplier (transformer-supplier transformer-supplier-fn)
-                     ^"[Ljava.lang.String;" (into-array String
-                                                        (clojure.core/map name state-store-names)))))
+     (.process ^KStream kstream
+               (transformer-supplier->processor-supplier
+                (transformer-supplier transformer-supplier-fn) true)
+               ^"[Ljava.lang.String;" (into-array String state-store-names))))
+
   (transform-values
     [this value-transformer-supplier-fn]
     (transform-values this value-transformer-supplier-fn []))
 
   (transform-values
     [_ value-transformer-supplier-fn state-store-names]
+    ;; Kafka 4.0 removed KStream.transformValues; route through processValues.
     (clj-kstream
-     (.transformValues ^KStream kstream
-                       ^ValueTransformerSupplier (value-transformer-supplier value-transformer-supplier-fn)
-                       ^"[Ljava.lang.String;" (into-array String state-store-names))))
+     (.processValues ^KStream kstream
+                     (value-transformer-supplier->fk-processor-supplier
+                      (value-transformer-supplier value-transformer-supplier-fn) false)
+                     ^"[Ljava.lang.String;" (into-array String state-store-names))))
 
   (flat-transform-values
     [this value-transformer-supplier-fn]
@@ -371,10 +398,10 @@
   (flat-transform-values
     [_ value-transformer-supplier-fn state-store-names]
     (clj-kstream
-     (.flatTransformValues ^KStream kstream
-                           ^ValueTransformerSupplier (value-transformer-supplier value-transformer-supplier-fn)
-                           ^"[Ljava.lang.String;" (into-array String
-                                                              (clojure.core/map name state-store-names)))))
+     (.processValues ^KStream kstream
+                     (value-transformer-supplier->fk-processor-supplier
+                      (value-transformer-supplier value-transformer-supplier-fn) true)
+                     ^"[Ljava.lang.String;" (into-array String state-store-names))))
 
   (join-global
     [_ global-ktable key-value-mapper-fn joiner-fn]

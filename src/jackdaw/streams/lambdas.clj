@@ -10,7 +10,9 @@
            [org.apache.kafka.streams.processor
             StreamPartitioner]
            [org.apache.kafka.streams.processor.api
-            Processor ProcessorSupplier]))
+            Processor ProcessorSupplier ProcessorContext Record
+            FixedKeyProcessor FixedKeyProcessorSupplier
+            FixedKeyProcessorContext FixedKeyRecord]))
 
 (set! *warn-on-reflection* true)
 
@@ -146,8 +148,14 @@
 
 (deftype FnStreamPartitioner [stream-partitioner-fn]
   StreamPartitioner
-  (partition [_this topic-name key val partition-count]
-    (stream-partitioner-fn topic-name key val partition-count)))
+  ;; Kafka 4.0 removed the deprecated `Integer partition(...)` method; the
+  ;; interface now exposes `Optional<Set<Integer>> partitions(...)`. Preserve
+  ;; jackdaw's single-partition fn contract by wrapping its result in a
+  ;; singleton set (empty Optional => fall back to the default partitioner).
+  (partitions [_this topic-name key val partition-count]
+    (if-let [p (stream-partitioner-fn topic-name key val partition-count)]
+      (java.util.Optional/of #{(int p)})
+      (java.util.Optional/empty))))
 
 (defn stream-partitioner
   "Packages up a Clojure fn in a kstream partitioner."
@@ -198,13 +206,23 @@
   [value-transformer-supplier-fn]
   (FnValueTransformerSupplier. value-transformer-supplier-fn))
 
+(defprotocol IContextualTransformer
+  "Lets the Processor-API adapters inject the live (api) ProcessorContext into
+  jackdaw's context-aware transformer sugar. Kafka 4.0 removed the legacy
+  Transformer.init(ProcessorContext); the new context is supplied here instead."
+  (set-transformer-context! [this ctx]))
+
 (deftype FnTransformer [context xfm-fn]
   Transformer
-  (init [_this transformer-context]
-    (reset! context transformer-context))
+  ;; Kafka 4.0 removed the legacy ProcessorContext passed to Transformer.init;
+  ;; the adapter injects the new api ProcessorContext via set-transformer-context!.
+  (init [_this _transformer-context])
   (close [_this])
   (transform [_this k v]
-    (xfm-fn @context k v)))
+    (xfm-fn @context k v))
+  IContextualTransformer
+  (set-transformer-context! [_this ctx]
+    (reset! context ctx)))
 
 (defn transformer-with-ctx
   "Helper to create a Transformer for use inside the jackdaw transform wrapper.
@@ -224,11 +242,13 @@
 
 (deftype FnValueTransformer [context xfm-fn]
   ValueTransformer
-  (init [_this transformer-context]
-    (reset! context transformer-context))
+  (init [_this _transformer-context])
   (close [_this])
   (transform [_this v]
-    (xfm-fn @context v)))
+    (xfm-fn @context v))
+  IContextualTransformer
+  (set-transformer-context! [_this ctx]
+    (reset! context ctx)))
 
 (defn value-transformer-with-ctx
   "Helper to create a ValueTransformer for use inside the jackdaw transform-values wrapper.
@@ -245,3 +265,70 @@
   ```"
   [xfm-fn]
   (fn [] (FnValueTransformer. (atom nil) xfm-fn)))
+
+;; Kafka 4.0 (KIP-820) removed KStream.transform/flatTransform/transformValues/
+;; flatTransformValues. The Transformer/ValueTransformer interfaces still exist,
+;; so adapt them onto the Processor API (process/processValues). The transformer's
+;; returned value(s) are forwarded; the legacy ProcessorContext is gone, so the
+;; transformer's init receives nil - transformers that read the context must
+;; migrate to process! / a FixedKeyProcessor.
+
+(defn transformer-supplier->processor-supplier
+  "Adapt a TransformerSupplier onto a Processor API ProcessorSupplier.
+  `flat?` true => transform returns a seq of KeyValue; false => a single
+  KeyValue (nil drops the record)."
+  ^ProcessorSupplier [^TransformerSupplier supplier flat?]
+  (reify ProcessorSupplier
+    (get [_]
+      (let [transformer (volatile! nil)
+            ctx (volatile! nil)]
+        (reify Processor
+          (init [_ context]
+            (vreset! ctx context)
+            (let [t (.get supplier)]
+              (vreset! transformer t)
+              (when (satisfies? IContextualTransformer t)
+                (set-transformer-context! t context))
+              (.init ^Transformer t nil)))
+          (process [_ record]
+            (let [^Record record record
+                  result (.transform ^Transformer @transformer
+                                     (.key record) (.value record))
+                  forward1 (fn [^KeyValue kv]
+                             (.forward ^ProcessorContext @ctx
+                                       (.withValue (.withKey record (.key kv))
+                                                   (.value kv))))]
+              (when result
+                (if flat?
+                  (doseq [kv result] (forward1 kv))
+                  (forward1 result)))))
+          (close [_]
+            (when-let [t @transformer] (.close ^Transformer t))))))))
+
+(defn value-transformer-supplier->fk-processor-supplier
+  "Adapt a ValueTransformerSupplier onto a FixedKeyProcessorSupplier
+  (processValues, key preserved). `flat?` true => transform returns a seq of
+  values; false => a single value (nil drops the record)."
+  ^FixedKeyProcessorSupplier [^ValueTransformerSupplier supplier flat?]
+  (reify FixedKeyProcessorSupplier
+    (get [_]
+      (let [transformer (volatile! nil)
+            ctx (volatile! nil)]
+        (reify FixedKeyProcessor
+          (init [_ context]
+            (vreset! ctx context)
+            (let [t (.get supplier)]
+              (vreset! transformer t)
+              (when (satisfies? IContextualTransformer t)
+                (set-transformer-context! t context))
+              (.init ^ValueTransformer t nil)))
+          (process [_ record]
+            (let [^FixedKeyRecord record record
+                  result (.transform ^ValueTransformer @transformer (.value record))]
+              (when result
+                (if flat?
+                  (doseq [v result]
+                    (.forward ^FixedKeyProcessorContext @ctx (.withValue record v)))
+                  (.forward ^FixedKeyProcessorContext @ctx (.withValue record result))))))
+          (close [_]
+            (when-let [t @transformer] (.close ^ValueTransformer t))))))))

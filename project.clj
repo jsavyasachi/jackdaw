@@ -1,11 +1,11 @@
-(defproject fundingcircle/jackdaw "_"
+(defproject net.clojars.savya/jackdaw "1.3.0"
   :description "A Clojure library for the Apache Kafka distributed streaming platform."
 
   :license {:name "BSD 3-clause"  :url "http://opensource.org/licenses/BSD-3-Clause"}
-           
-  :scm {:name "git" :url "https://github.com/fundingcircle/jackdaw"}
 
-  :url "https://github.com/FundingCircle/jackdaw/"
+  :scm {:name "git" :url "https://github.com/jsavyasachi/jackdaw"}
+
+  :url "https://github.com/jsavyasachi/jackdaw/"
 
   :repositories [["confluent" {:url "https://packages.confluent.io/maven/"}]
                  ["mulesoft" {:url "https://repository.mulesoft.org/nexus/content/repositories/public/"}]]
@@ -17,17 +17,25 @@
                  ;; Confluent does paired releases with Kafka, this should tie
                  ;; off with the kafka version.
                  ;; See https://docs.confluent.io/current/release-notes.html
-                 [io.confluent/kafka-schema-registry-client "7.3.2"
+                 [io.confluent/kafka-schema-registry-client "8.2.1"
                   :exclusions [com.fasterxml.jackson.core/jackson-databind]]
-                 [io.confluent/kafka-avro-serializer "7.3.2"]
-                 [io.confluent/kafka-json-schema-serializer "7.3.2"]
-                 [org.apache.kafka/kafka-clients "3.3.2"]
-                 [org.apache.kafka/kafka-streams "3.3.2"]
-                 [org.apache.kafka/kafka-streams-test-utils "3.3.2"]
+                 [io.confluent/kafka-avro-serializer "8.2.1"]
+                 [io.confluent/kafka-json-schema-serializer "8.2.1"]
+                 [org.apache.kafka/kafka-clients "4.3.0"]
+                 [org.apache.kafka/kafka-streams "4.3.0"]
+                 [org.apache.kafka/kafka-streams-test-utils "4.3.0"]
 
-                 [org.clojure/clojure "1.11.1" :scope "provided"]
+                 ;; Align Jackson across Kafka 4.x / Confluent / Avro. Without this,
+                 ;; jsonista 0.3.7 drags jackson-core down to 2.14.1 while databind
+                 ;; resolves to 2.21.2, so databind references
+                 ;; com.fasterxml.jackson.core.exc.StreamConstraintsException
+                 ;; (jackson-core >= 2.15) which is absent -> ClassNotFoundException.
+                 [com.fasterxml.jackson.core/jackson-core "2.21.2"]
+                 [com.fasterxml.jackson.core/jackson-databind "2.21.2"]
+
+                 [org.clojure/clojure "1.12.5" :scope "provided"]
                  [org.clojure/java.data "1.0.95"]
-                 [org.clojure/data.json "2.4.0"]
+                 [org.clojure/data.json "2.5.2"]
                  [org.clojure/data.fressian "1.0.0"]
                  [org.clojure/tools.logging "1.2.4"]
                  [org.clojure/core.cache "1.0.225"]
@@ -35,20 +43,7 @@
 
   :aliases {"kaocha" ["run" "-m" "kaocha.runner"]}
   :aot [jackdaw.serdes.edn2 jackdaw.serdes.fressian jackdaw.serdes.fn-impl]
-  :plugins [[me.arrdem/lein-git-version "2.0.8"]
-            [com.github.clj-kondo/lein-clj-kondo "0.2.5"]]
-
-  :git-version
-  {:status-to-version
-   (fn [{:keys [tag branch ahead? dirty?] :as git}]
-     (if (and tag (not ahead?) (not dirty?) (= "master" branch))
-       tag
-       (let [[_ prefix patch] (re-find #"(\d+\.\d+)\.(\d+)" tag)
-             patch            (Long/parseLong patch)
-             patch+           (inc patch)
-             branch+          (-> branch
-                                  (.replaceAll "[^a-zA-Z0-9]" "_"))]
-         (format "%s.%d-%s-SNAPSHOT" prefix patch+ branch+))))}
+  :plugins [[com.github.clj-kondo/lein-clj-kondo "0.2.5"]]
 
   :profiles {;; Provide an alternative to :leiningen/default, used to include :shared
              :default
@@ -56,7 +51,7 @@
 
              ;; Define a profile intended to be shared by this project and its children
              :shared
-             {:url "https://github.com/FundingCircle/jackdaw"
+             {:url "https://github.com/jsavyasachi/jackdaw"
               :license {:name "BSD 3-clause"
                         :url "http://opensource.org/licenses/BSD-3-Clause"}
               :repositories
@@ -66,7 +61,7 @@
               [["clojars" {:url "https://clojars.org/repo/"
                            :username :env/clojars_username
                            :password :env/clojars_password
-                           :signing {:gpg-key "fundingcirclebot@fundingcircle.com"}}]]}
+                           :sign-releases false}]]}
 
              ;; The dev profile - non-deployment configuration
              :dev
@@ -76,11 +71,15 @@
               :resource-paths ["test/resources"]
               :injections [(require 'io.aviso.logging.setup)]
               :dependencies [[io.aviso/logging "1.0"]
+                             ;; override io.aviso/logging's old transitive pretty,
+                             ;; whose io.aviso.exception/update-keys collides with
+                             ;; clojure.core/update-keys (Clojure 1.11+).
+                             [io.aviso/pretty "1.4.4"]
                              [aleph/aleph "0.6.1"]
-                             [org.apache.kafka/kafka-streams-test-utils "3.3.2"]
-                             [org.apache.kafka/kafka-clients "3.3.2" :classifier "test"]
+                             [org.apache.kafka/kafka-streams-test-utils "4.3.0"]
+                             [org.apache.kafka/kafka-clients "4.3.0" :classifier "test"]
                              [org.clojure/test.check "1.1.1"]
-                             [org.apache.kafka/kafka_2.13 "3.3.2"]
+                             [org.apache.kafka/kafka_2.13 "4.3.0"]
                              [lambdaisland/kaocha "1.80.1274"]
                              [lambdaisland/kaocha-cloverage "1.1.89"]
                              [lambdaisland/kaocha-junit-xml "1.17.101"]]}

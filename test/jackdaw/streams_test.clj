@@ -238,7 +238,9 @@
 
         (publish 1 1)
 
-        (is (= [[1 1]] (mock/get-keyvals driver topic-b)))
+        ;; Kafka 4.0 removed KStream.through; jackdaw now implements it via
+        ;; repartition, so topic-b is an internal repartition topic and the
+        ;; data flows downstream to topic-c rather than to the named topic-b.
         (is (= [[1 1]] (mock/get-keyvals driver topic-c))))))
 
   (testing "to"
@@ -1403,8 +1405,10 @@
                                  (k/transform-values
                                    (lambdas/value-transformer-with-ctx
                                      (fn [ctx v]
+                                       ;; Kafka 4.0 moved record metadata off the
+                                       ;; context onto recordMetadata().
                                        {:new-val (+ (:val v) 1)
-                                        :topic (.topic ctx)})))
+                                        :topic (.topic (.get (.recordMetadata ctx)))})))
                                  (k/to output-t))))]
         (let [publisher (partial mock/publish driver input-t)]
 
