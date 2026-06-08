@@ -31,7 +31,10 @@
 
 (defn load-assignments
   [consumer]
-  (.poll ^Consumer consumer (Duration/ofMillis 0))
+  ;; A 0ms poll does not complete the group rebalance under Kafka 4.x, so the
+  ;; subsequent seek-to-end would no-op on an empty assignment. Poll until the
+  ;; partitions are actually assigned.
+  (kafka/poll-for-assignments consumer)
   (.assignment ^Consumer consumer))
 
 (defn seek-to-end

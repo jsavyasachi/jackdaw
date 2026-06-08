@@ -213,6 +213,22 @@
   (doto ^Consumer consumer
     (.seek ^TopicPartition (jd/as-TopicPartition topic-partition) offset)))
 
+(defn poll-for-assignments
+  "Poll the consumer until it has a non-empty partition assignment, bounded by
+  `timeout-ms` (default 10s). Kafka 4.x's group rebalance does not complete
+  within a single 0ms poll, so callers that need an assignment must keep
+  polling. Returns the consumer."
+  (^Consumer [^Consumer consumer]
+   (poll-for-assignments consumer 10000))
+  (^Consumer [^Consumer consumer timeout-ms]
+   (let [deadline (+ (System/currentTimeMillis) (long timeout-ms))]
+     (loop []
+       (when (and (empty? (.assignment consumer))
+                  (< (System/currentTimeMillis) deadline))
+         (.poll consumer (Duration/ofMillis 100))
+         (recur))))
+   consumer))
+
 (defn seek-to-end-eager
   "Seek to the last offset for all assigned partitions, and force positioning.
 
@@ -222,7 +238,7 @@
   ([^Consumer consumer]
    (seek-to-end-eager consumer []))
   ([^Consumer consumer topic-partitions]
-   (poll consumer 0) ;; load assignments
+   (poll-for-assignments consumer) ;; load assignments
    (.seekToEnd consumer topic-partitions)
    (position-all consumer)
    consumer))
@@ -236,7 +252,7 @@
    (seek-to-beginning-eager consumer [])
    consumer)
   ([^Consumer consumer topic-partitions]
-   (poll consumer 0)
+   (poll-for-assignments consumer)
    (.seekToBeginning consumer (map jd/as-TopicPartition topic-partitions))
    (position-all consumer)
    consumer))

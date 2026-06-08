@@ -262,8 +262,9 @@
     (with-consumer (-> (client/consumer (consumer-config "partition-test"))
                        (client/subscribe [bar-topic]))
         (fn [consumer]
-          ;; without an initial `poll`, there is no position info
-          (client/poll consumer 0)
+          ;; the rebalance must assign partitions before there is position info
+          ;; (Kafka 4.x needs more than a 0ms poll)
+          (client/poll-for-assignments consumer)
           (is (= {{:topic-name "bar" :partition 0} 0}
                  (client/position-all consumer)))))))
 

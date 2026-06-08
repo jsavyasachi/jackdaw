@@ -11,7 +11,9 @@
    [clojure.test :as t])
   (:import
    (org.apache.kafka.clients.admin AdminClient NewTopic)
-   (org.apache.kafka.streams KafkaStreams$StateListener KafkaStreams$State)))
+   (org.apache.kafka.streams KafkaStreams$StateListener KafkaStreams$State)
+   (org.apache.kafka.streams.errors StreamsUncaughtExceptionHandler
+                                    StreamsUncaughtExceptionHandler$StreamThreadExceptionResponse)))
 
 (set! *warn-on-reflection* false)
 
@@ -97,10 +99,15 @@
 
 (defn- set-error
   [error]
-  (reify Thread$UncaughtExceptionHandler
-    (uncaughtException [_this _thread e]
+  ;; Kafka 4.0 removed setUncaughtExceptionHandler(Thread.UncaughtExceptionHandler);
+  ;; the replacement takes a StreamsUncaughtExceptionHandler whose handle returns a
+  ;; response. Capture the error and shut this client down (matches the old behaviour
+  ;; where an uncaught exception killed the stream thread).
+  (reify StreamsUncaughtExceptionHandler
+    (handle [_this e]
       (log/error e (.getMessage e))
-      (reset! error e))))
+      (reset! error e)
+      StreamsUncaughtExceptionHandler$StreamThreadExceptionResponse/SHUTDOWN_CLIENT)))
 
 (defn kstream-fixture
   "Returns a fixture that builds and starts kafka streams for the supplied topology
