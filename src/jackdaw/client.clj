@@ -177,11 +177,13 @@
 
 (defn poll
   "Polls kafka for new messages, returning a potentially empty sequence
-  of datafied messages."
+  of datafied messages. `timeout` is a `java.time.Duration` or a number of
+  milliseconds."
   [^Consumer consumer timeout]
-  (some->> (if (int? timeout)
-             (.poll consumer ^long timeout)
-             (.poll consumer ^Duration timeout))
+  ;; Kafka 4.0 removed Consumer.poll(long); only poll(Duration) remains.
+  (some->> (.poll consumer ^Duration (if (instance? Duration timeout)
+                                       timeout
+                                       (Duration/ofMillis (long timeout))))
            (map jd/datafy)))
 
 (defn position
