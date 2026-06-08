@@ -2,6 +2,40 @@
 
 ### Unreleased
 
+### [1.3.0] - [2026-06-08]
+
+Maintenance fork published as `net.clojars.savya/jackdaw` (the upstream
+`fundingcircle/jackdaw` is unmaintained). This release modernizes jackdaw for
+Apache Kafka 4.x.
+
+- **Apache Kafka 4.x / Confluent 8.x.** Bumped `org.apache.kafka`
+  clients/streams/test-utils `3.3.2` → `4.3.0` and the `io.confluent` serdes
+  `7.3.2` → `8.2.1`; Clojure `1.11.1` → `1.12.5`. Pinned `jackson-core`/
+  `jackson-databind` to `2.21.2` to resolve a transitive conflict.
+- **Streams DSL ported off Kafka-4.0 removals** (the public jackdaw API is
+  unchanged):
+  - `branch` now uses `split()`/`BranchedKStream` (still returns the positional
+    vector of streams).
+  - `through` is reimplemented via `repartition`. **Breaking:** it now routes
+    through an internally-managed repartition topic rather than the named user
+    topic.
+  - `transform`/`flat-transform`/`transform-values`/`flat-transform-values` are
+    reimplemented on the Processor API (`process`/`processValues`). **Breaking:**
+    context-aware transformer sugar (`transformer-with-ctx`,
+    `value-transformer-with-ctx`) now receives the new `api.ProcessorContext`;
+    read record metadata via `recordMetadata()` rather than `.topic()` etc.
+- **admin**: `alterConfigs` → `incrementalAlterConfigs`; `DescribeTopicsResult`
+  uses `allTopicNames`.
+- Cleared all reflection warnings (#322) including `admin/retry-exists?` (#369).
+- `map->Properties` stringifies scalar config values so integer-valued config
+  keys read back correctly (#311).
+- Avro union-record coercion uses `Schema.Field.hasDefaultValue`, fixing union
+  records whose fields are defaulted (#349, #258).
+- `MockSchemaRegistryClient` registers the Avro + JSON providers (Confluent 8.x
+  no longer registers them by default).
+
+Requires **JDK 17+** and **Kafka 4.x** brokers/clients.
+
 ### [0.9.12] - [2023-12-05]
 - Support for Foreign Key joins [#365](https://github.com/FundingCircle/jackdaw/pull/365) (Issue [#364])
 - add manifold and keep aleph in dev dependencies [#360](https://github.com/FundingCircle/jackdaw/pull/360). Users of test-machine will have to add aleph to the test deps in their app.

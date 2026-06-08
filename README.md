@@ -1,15 +1,40 @@
-# Jackdaw &middot; [![Clojars Project](https://img.shields.io/clojars/v/fundingcircle/jackdaw.svg)](https://clojars.org/fundingcircle/jackdaw) [![Code Coverage](https://codecov.io/gh/FundingCircle/jackdaw/branch/master/graph/badge.svg)](https://codecov.io/gh/FundingCircle/jackdaw) [![cljdoc badge](https://cljdoc.org/badge/fundingcircle/jackdaw)](https://cljdoc.org/d/fundingcircle/jackdaw/CURRENT) [![CircleCI](https://circleci.com/gh/FundingCircle/jackdaw.svg?style=shield)](https://circleci.com/gh/FundingCircle/jackdaw)
+# Jackdaw &middot; [![Clojars Project](https://img.shields.io/clojars/v/net.clojars.savya/jackdaw.svg)](https://clojars.org/net.clojars.savya/jackdaw) [![cljdoc badge](https://cljdoc.org/badge/net.clojars.savya/jackdaw)](https://cljdoc.org/d/net.clojars.savya/jackdaw/CURRENT)
 
 Jackdaw is a Clojure library for the Apache Kafka distributed streaming platform. With Jackdaw, you can create and list topics using the AdminClient API, produce and consume records using the Producer and Consumer APIs, and create stream processing applications using the Streams API. Jackdaw also contains functions to serialize and deserialize records as JSON, EDN, and Avro, as well as functions for writing unit and integration tests.
 
+> **Maintenance fork.** This is a maintained continuation of
+> [`fundingcircle/jackdaw`](https://github.com/fundingcircle/jackdaw) (unmaintained
+> since 2024), modernized for **Apache Kafka 4.x**. It is published under a new
+> coordinate, `net.clojars.savya/jackdaw`. See the [CHANGELOG](CHANGELOG.md) for the
+> 4.x migration notes.
+
+## Installation
+
+Leiningen / Boot:
+
+```clojure
+[net.clojars.savya/jackdaw "1.3.0"]
+```
+
+deps.edn:
+
+```clojure
+net.clojars.savya/jackdaw {:mvn/version "1.3.0"}
+```
+
+Jackdaw resolves Confluent artifacts from the Confluent Maven repository; add
+`https://packages.confluent.io/maven/` to your `:repositories` (Leiningen) or
+`:mvn/repos` (deps.edn).
+
 # Supported versions
 
-Jackdaw currently only works with Clojure >= 1.10.
-This is because we are using the `datafy` protocol which was only introduced in 1.10.
+Jackdaw 1.3.0 requires **Clojure >= 1.10**, **JDK 17+**, and **Apache Kafka 4.x** /
+**Confluent Platform 8.x** brokers. (The Clojure floor is set by the `datafy` protocol,
+introduced in 1.10.)
 
 ## Documentation
 
-You can find all the documentation on [cljdoc](https://cljdoc.org/d/fundingcircle/jackdaw).
+You can find all the documentation on [cljdoc](https://cljdoc.org/d/net.clojars.savya/jackdaw).
 
 ## Examples
 
