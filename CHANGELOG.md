@@ -2,6 +2,13 @@
 
 ### Unreleased
 
+### [1.3.2] - [2026-06-08]
+
+- Support recursively-defined Avro records (#328). A record that references
+  itself (e.g. the Avro spec's `LongList` linked list) no longer overflows the
+  stack while building its serde; the coercion build now registers a forward
+  reference for the in-progress record so the self-reference resolves to it.
+
 ### [1.3.1] - [2026-06-08]
 
 Runtime Kafka-4.x fixes that the mock (TopologyTestDriver) suite could not

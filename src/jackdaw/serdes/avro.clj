@@ -106,23 +106,6 @@
         {:type base-type :logical-type (str logical-type)}
         {:type base-type}))))
 
-(defn make-coercion-stack
-  "Given a registry mapping Avro type specs to 2-arity coercion
-  constructors, recursively build up a coercion stack which will go
-  clj <-> avro, returning the root coercion object.
-
-  (satisfies `SchemaCoercion`)"
-  [type-registry]
-  (fn stack [^Schema schema]
-    (let [dispatch (dispatch-on-type-fields schema)
-          ctor (or (get type-registry dispatch)
-                   (when (contains? dispatch :logical-type)
-                     (get type-registry (dissoc dispatch :logical-type))))]
-      (if-not ctor
-        (throw (ex-info "Failed to dispatch coersion!"
-                        {:schema schema, :dispatch dispatch}))
-        (ctor stack schema)))))
-
 ;; Protocols and Multimethods
 
 (defprotocol SchemaCoercion
@@ -130,6 +113,53 @@
   (match-avro? [schema-type avro-data])
   (avro->clj [schema-type avro-data])
   (clj->avro [schema-type clj-data path]))
+
+(deftype RecursionPoint [coercion]
+  ;; Forward reference used to break the recursion when building a coercion for
+  ;; a recursively-defined record (e.g. an Avro linked list, #328). The real
+  ;; coercion is delivered into `coercion` (a promise) once the record's stack
+  ;; has finished building; every method call happens at (de)serialization time,
+  ;; after the build completes, so the deref never blocks.
+  SchemaCoercion
+  (match-clj? [_ x] (match-clj? @coercion x))
+  (match-avro? [_ x] (match-avro? @coercion x))
+  (avro->clj [_ x] (avro->clj @coercion x))
+  (clj->avro [_ x path] (clj->avro @coercion x path)))
+
+(defn make-coercion-stack
+  "Given a registry mapping Avro type specs to 2-arity coercion
+  constructors, recursively build up a coercion stack which will go
+  clj <-> avro, returning the root coercion object.
+
+  Recursively-defined records (#328) are handled by registering a
+  RecursionPoint forward reference (keyed by the record's full name) before
+  recursing into its fields, so a self-reference resolves to it instead of
+  recursing forever. The cache is scoped to each top-level build, so schema
+  evolution (different versions of the same record name) is unaffected.
+
+  (satisfies `SchemaCoercion`)"
+  [type-registry]
+  (letfn [(build [building ^Schema schema]
+            (let [dispatch (dispatch-on-type-fields schema)
+                  k        (when (= "record" (:type dispatch)) (.getFullName schema))]
+              (if (and k (contains? @building k))
+                (get @building k)
+                (let [ctor (or (get type-registry dispatch)
+                               (when (contains? dispatch :logical-type)
+                                 (get type-registry (dissoc dispatch :logical-type))))]
+                  (if-not ctor
+                    (throw (ex-info "Failed to dispatch coersion!"
+                                    {:schema schema, :dispatch dispatch}))
+                    (let [stack (fn [s] (build building s))]
+                      (if k
+                        (let [p (promise)
+                              _ (swap! building assoc k (RecursionPoint. p))
+                              coercion (ctor stack schema)]
+                          (deliver p coercion)
+                          coercion)
+                        (ctor stack schema))))))))]
+    (fn [^Schema schema]
+      (build (atom {}) schema))))
 
 ;; Validation
 

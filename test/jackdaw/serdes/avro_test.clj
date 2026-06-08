@@ -480,6 +480,17 @@
     (is (= {:myunion {:foo false}}
            (round-trip serde "whatever" {:myunion {}})))))
 
+(deftest recursive-record-test
+  ;; #328: a recursively-defined record (the Avro spec's LongList linked list)
+  ;; must not stack-overflow while building the coercion, and must round-trip.
+  (let [schema {:type   "record"
+                :name   "LongList"
+                :fields [{:name "value" :type "long"}
+                         {:name "next"  :type ["null" "LongList"]}]}
+        serde  (->serde (json/write-str schema))
+        msg    {:value 1 :next {:value 2 :next {:value 3 :next nil}}}]
+    (is (= msg (round-trip serde "whatever" msg)))))
+
 (deftest record-serde-test
   (let [serde (->serde complex-schema-str)
         valid-map {:string-field "hello"
