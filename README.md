@@ -38,14 +38,14 @@ You can find all the documentation on [cljdoc](https://cljdoc.org/d/net.clojars.
 
 ## Examples
 
-- [Pipe](https://github.com/FundingCircle/jackdaw/tree/master/examples/pipe)
-- [Word Count](https://github.com/FundingCircle/jackdaw/tree/master/examples/word-count)
-- [Simple Ledger](https://github.com/FundingCircle/jackdaw/tree/master/examples/simple-ledger)
-- [Roll Dice](https://github.com/FundingCircle/jackdaw/tree/master/examples/rolldice)
+- [Pipe](https://github.com/jsavyasachi/jackdaw/tree/main/examples/pipe)
+- [Word Count](https://github.com/jsavyasachi/jackdaw/tree/main/examples/word-count)
+- [Simple Ledger](https://github.com/jsavyasachi/jackdaw/tree/main/examples/simple-ledger)
+- [Roll Dice](https://github.com/jsavyasachi/jackdaw/tree/main/examples/rolldice)
 
 ## Contributing
 
-We welcome any thoughts or patches. You can reach us in [`#jackdaw`](https://clojurians.slack.com/messages/CEA3C7UG0/) (or [open an issue](https://github.com/fundingcircle/jackdaw/issues)).
+We welcome any thoughts or patches - [open an issue](https://github.com/jsavyasachi/jackdaw/issues) on this fork.
 
 ## Related projects
 
@@ -55,29 +55,19 @@ See [an example using jackdaw](https://github.com/FundingCircle/topology-grapher
 
 ## Releasing
 
-Anyone with the appropriate credentials can "cut a release" of jackdaw
-* Tags are protected, you will need to be a maintainer or admin to apply them
-* Clojars deployment uses a protected env, once a tag is created, the CI job to deploy will need to be reviewed by the clojars env owner
+This fork self-publishes to Clojars under `net.clojars.savya/jackdaw`.
 
-
-Steps:
- 1. Review the diff of master vs the latest released tag (e.g. while preparing 0.7.0, I looked at https://github.com/FundingCircle/jackdaw/compare/0.6.9...master to see what was actually merged vs what was in the Changelog). Make a PR to put a date on the version being released and if necessary ensure completeness and consistency of the Changelog
- 2. Use the [Draft a new release](https://github.com/FundingCircle/jackdaw/releases/new) feature in github to prepare a release
- 3. In the "tag version" field, enter the proposed version
- 4. In the "release title" field, enter "v[version]"
- 5. In the "describe this release" field, enter the contents of the Changelog and add a credit to the contributors of the release
- 6. When happy, use the "Publish Release" button to publish the release in github which creates a corresponding git tag
- 7. Once the tag is seen by circleci, a deployment build is triggered which builds the project and deploys a release to clojars
-
-Steps 2 to 6 is essentially `git tag $version -m "$title\n\n$description" && git push --tags`
-
-#### Snapshot release
-
-Snapshot releases can be created by pushing a tag with the format `publish-snapshot-semver`
+1. Bump the version in `project.clj` and add a dated entry to `CHANGELOG.md`.
+2. Make sure the test suite is green and `lein check` reports no reflection warnings.
+3. Deploy: `CLOJARS_USERNAME=<user> CLOJARS_PASSWORD=<clojars-deploy-token> lein deploy clojars`.
+4. Tag the release: `git tag <version> && git push --tags`.
 
 ## License
 
 Copyright © 2017 Funding Circle
+
+Maintenance fork (2026) by [Savyasachi](https://github.com/jsavyasachi); original:
+https://github.com/fundingcircle/jackdaw
 
 Distributed under the BSD 3-Clause License.
  
