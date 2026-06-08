@@ -1,11 +1,19 @@
 (ns jackdaw.data-test
-  (:require [clojure.test :refer [are deftest]]
+  (:require [clojure.test :refer [are deftest is testing]]
             [jackdaw.data :as data])
   (:import org.apache.kafka.clients.producer.ProducerRecord
            [org.apache.kafka.common.header
             Headers Header]))
 
 (set! *warn-on-reflection* false)
+
+(deftest map->Properties-test
+  (testing "scalar config values are stringified so getProperty works (#311)"
+    (let [p (data/map->Properties {:retries 3 "acks" "all" :enable.idempotence true})]
+      ;; getProperty returns nil for non-String values; integers must be coerced
+      (is (= "3" (.getProperty p "retries")))
+      (is (= "all" (.getProperty p "acks")))
+      (is (= "true" (.getProperty p "enable.idempotence"))))))
 
 (deftest producer-record-arity-2
   (are [topic-config value]

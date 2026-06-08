@@ -70,13 +70,16 @@
 ;;;; Properties
 
 (defn map->Properties
-  "Given a mapping of keywords to string values, stringify the keys via
-  `#'clojure.walk/stringify-keys` and return a `Properties` object
-  with the transformed keys and unmodified values."
+  "Given a mapping of keywords to values, stringify the keys via
+  `#'clojure.walk/stringify-keys` and return a `Properties` object. Scalar
+  values (numbers, booleans) are also stringified: `Properties.getProperty`
+  only returns String values, so an integer-valued config key would otherwise
+  read back as nil (#311). Non-scalar values are passed through unchanged."
   ^Properties [m]
   (let [props (Properties.)]
     (when m
-      (.putAll props (stringify-keys m)))
+      (doseq [[k v] (stringify-keys m)]
+        (.put props k (if (or (number? v) (boolean? v)) (str v) v))))
     props))
 
 (defn->data Properties->data

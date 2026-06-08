@@ -402,7 +402,11 @@
       (and (every? (fn [[field-key [^Schema$Field field field-coercion]]]
                      (let [field-value (get clj-map field-key ::missing)]
                        (if (= field-value ::missing)
-                         (.defaultVal field)
+                         ;; A missing field is fine iff the schema gives it a
+                         ;; default. Use hasDefaultValue (presence) rather than
+                         ;; defaultVal, whose returned value may be falsey and
+                         ;; would mis-match union records (#349, #258, PR #367).
+                         (.hasDefaultValue field)
                          (match-clj? field-coercion field-value))))
                    field->schema+coercion)
            (empty? unknown-fields))))

@@ -464,6 +464,22 @@
     (is (= {:myunion {:field2 "hello"}}
            (round-trip serde "whatever" {:myunion {:field2 "hello"}})))))
 
+(deftest default-values-are-used-when-coercing-union-record
+  ;; #349 / #258: a union record whose only field has a default must still
+  ;; match when that field is omitted (PR #367).
+  (let [schema {:type   "record",
+                :name   "myrecord",
+                :fields [{:name "myunion",
+                          :type [{:type :null}
+                                 {:type   "record",
+                                  :name   "recordtype",
+                                  :fields [{:name "foo"
+                                            :type "boolean"
+                                            :default false}]}]}]}
+        serde  (->serde (json/write-str schema))]
+    (is (= {:myunion {:foo false}}
+           (round-trip serde "whatever" {:myunion {}})))))
+
 (deftest record-serde-test
   (let [serde (->serde complex-schema-str)
         valid-map {:string-field "hello"
