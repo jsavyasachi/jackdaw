@@ -38,9 +38,13 @@
   (constantly nil))
 
 (defn FressianSerde-serializer
+  "Backing fn for the FressianSerde gen-class `serializer` method; returns a
+  Fressian serializer."
   [& _]
   (fressian-serializer))
 
 (defn FressianSerde-deserializer
+  "Backing fn for the FressianSerde gen-class `deserializer` method; returns a
+  Fressian deserializer."
   [& _]
   (fressian-deserializer))

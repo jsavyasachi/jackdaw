@@ -2,6 +2,12 @@
 
 ### Unreleased
 
+### [1.3.3] - [2026-06-11]
+
+- Add docstrings to the 95 public functions/macros that were missing them
+  across the client, serdes, streams, data, and test-machine namespaces. No
+  behavior changes.
+
 ### [1.3.2] - [2026-06-08]
 
 - Support recursively-defined Avro records (#328). A record that references

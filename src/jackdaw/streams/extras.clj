@@ -11,6 +11,9 @@
 (set! *warn-on-reflection* true)
 
 (defn map-validating!
+  "Adds a map-values stage to `builder` that validates each outbound record
+  against `topic-spec`, throwing (and logging) an ex-info with the explain-data
+  and the `:line`/`:file` source location if a record is invalid."
   [builder topic topic-spec {:keys [line file]}]
   (js/map-values builder
                  (fn [val]
@@ -24,7 +27,10 @@
                        (throw (ex-info msg data)))
                      val))))
 
-(defn with-file [form-meta]
+(defn with-file
+  "Returns `form-meta` with its `:file` defaulted to the current `*file*` when
+  absent, so macro-captured source locations survive expansion."
+  [form-meta]
   (update form-meta :file #(or %1 *file*)))
 
 (defn logging-state-restore-listener

@@ -6,12 +6,16 @@
 (set! *warn-on-reflection* true)
 
 (defn identity-consumer
+  "Builds an identity-transport consumer that reads directly from `stream`,
+  bypassing Kafka (used to feed produced records straight back to the machine)."
   [stream]
   (let [started? (promise)]
     {:started? started?
      :messages stream}))
 
 (defn identity-producer
+  "Builds an identity-transport producer backed by a fresh in-memory stream,
+  bypassing Kafka."
   []
   (let [messages (s/stream 1)]
     {:messages messages}))

@@ -35,6 +35,7 @@
 ;; Avro serde
 
 (defn exactly-one-true?
+  "Returns true if exactly one of `args` is truthy."
   [& args]
   (= 1 (count (filter identity args))))
 

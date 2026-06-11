@@ -55,6 +55,9 @@
    :partition (.partition tp)})
 
 (defn as-TopicPartition
+  "Coerces `o` to a Kafka TopicPartition: returns it unchanged if already one,
+  otherwise rebuilds it from a Clojure map (a datafy'd instance or a
+  `{:topic-name _ :partition _}` map)."
   ^TopicPartition [o]
   (cond (instance? TopicPartition o)
         o

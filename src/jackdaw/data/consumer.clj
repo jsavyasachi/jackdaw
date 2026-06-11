@@ -84,6 +84,9 @@
   (->OffsetAndTimestamp m))
 
 (defn as-OffsetAndTimestamp
+  "Coerces `ot` to a Kafka OffsetAndTimestamp: returns it unchanged if already
+  one, otherwise rebuilds it from a Clojure map (a datafy'd instance or an
+  `{:offset _ :timestamp _}` map)."
   [ot]
   (cond (instance? OffsetAndTimestamp ot)
         ot

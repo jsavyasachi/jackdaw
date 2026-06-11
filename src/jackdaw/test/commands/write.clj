@@ -5,10 +5,18 @@
 
 (set! *warn-on-reflection* true)
 
-(defn default-partition-fn [topic-map _topic-name k _v partition-count]
+(defn default-partition-fn
+  "Returns the partition (0..partition-count) for key `k` on `topic-map`, using
+  Kafka's default partitioning strategy."
+  [topic-map _topic-name k _v partition-count]
   (int (partitioning/default-partition topic-map k nil partition-count)))
 
-(defn create-message [topic-map message opts]
+(defn create-message
+  "Builds a producer-record map from `message` for `topic-map`: derives the key
+  (via `:key-fn`, default `:id`) and the partition (via `:partition-fn`, default
+  Kafka's), with explicit `:key`/`:partition`/`:key-fn`/`:partition-fn` in `opts`
+  overriding the topic map. Throws if the resulting partition is out of range."
+  [topic-map message opts]
   ;; By default the message will use the `:id` field as the key on kafka
   ;; and run the default partitioning function for the partition (which
   ;; works the same as the kafka one). This behaviour can be changed as follows:
@@ -49,6 +57,9 @@
        :headers headers})))
 
 (defn do-write
+  "Produces `message` to `topic-name` through the test machine's producer and
+  waits up to `opts`'s `:timeout` ms (default 1000) for the ack. Returns an
+  `:error` map for an unknown topic or a timeout."
   ([machine topic-name message]
    (do-write machine topic-name message {}))
   ([machine topic-name message opts]
@@ -63,7 +74,10 @@
       :known-topics (keys (:topic-config machine))})))
 
 
-(defn handle-write-cmd [machine params]
+(defn handle-write-cmd
+  "Handler for the `:write!` command; applies `do-write` to `machine` and the
+  `[topic-name message opts?]` in `params`."
+  [machine params]
   (apply do-write machine params))
 
 (def command-map

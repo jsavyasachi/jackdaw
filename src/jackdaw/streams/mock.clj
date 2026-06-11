@@ -51,12 +51,16 @@
          (.pipeRecordList test-input-topic (List/of record)))))))
 
 (defn publish
+  "Pipes a single record with key `k` and value `v` (optionally at `time-ms`)
+  into `topic-config`'s topic on the mock `test-driver`."
   ([test-driver topic-config k v]
    ((producer test-driver topic-config) k v))
   ([test-driver topic-config time-ms k v]
    ((producer test-driver topic-config) time-ms k v)))
 
 (defn consume
+  "Reads and datafies the next available record from `topic-config`'s output
+  topic on the mock `test-driver`, or returns nil if none is ready."
   [test-driver
    {:keys [topic-name
            ^Serde key-serde
@@ -71,23 +75,34 @@
           (data/datafy)))))
 
 (defn repeatedly-consume
+  "Lazily consumes from `topic-config` on the mock `test-driver` until the output
+  topic is drained, returning a sequence of datafied records."
   [test-driver topic-config]
   (take-while some? (repeatedly (partial consume test-driver topic-config))))
 
 (defn get-keyvals
+  "Drains `topic-config` on the mock `test-driver`, returning a sequence of
+  `[key value]` pairs."
   [test-driver topic-config]
   (map #((juxt :key :value) %) (repeatedly-consume test-driver topic-config)))
 
 (defn get-records
+  "Drains `topic-config` on the mock `test-driver`, returning a sequence of full
+  datafied records (the same as `repeatedly-consume`)."
   [test-driver topic-config]
   (repeatedly-consume test-driver topic-config))
 
-(defn build-driver [f]
+(defn build-driver
+  "Builds a TopologyTestDriver by applying `f` to a fresh streams-builder and
+  compiling the resulting topology."
+  [f]
   (let [builder (interop/streams-builder)]
     (f builder)
     (streams-builder->test-driver builder)))
 
-(defn build-topology-driver [f]
+(defn build-topology-driver
+  "Builds a TopologyTestDriver by applying `f` to a fresh low-level `Topology`."
+  [f]
   (let [topology (Topology.)]
     (f topology)
     (topology->test-driver topology)))

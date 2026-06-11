@@ -34,7 +34,10 @@
 ;; For this reason, we try to make things a bit more meaningful by using
 ;; terms like "input-record" and "output-record".
 
-(defn set-headers [consumer-record headers]
+(defn set-headers
+  "Adds each entry of the `headers` map onto `consumer-record`'s Kafka record
+  headers, returning the record."
+  [consumer-record headers]
   (let [record-headers (.headers consumer-record)]
     (doseq [[k v] headers]
       (.add record-headers k v)))
@@ -66,6 +69,8 @@
       (assoc m :input-record record))))
 
 (defn with-output-record
+  "Returns a fn that converts a Kafka output record read from the test driver
+  into a `{:topic :key :value ...}` map."
   [_topic-config]
   (fn [r]
     {:topic (.topic r)
@@ -105,6 +110,10 @@
           (s/put! messages {:error e}))))))
 
 (defn mock-consumer
+  "Builds a test-machine consumer over TopologyTestDriver `driver` that polls
+  `topic-config`'s output topics, deserializes each record with `deserializers`
+  and reverse-maps it to its logical topic. Returns the consumer with its
+  message stream and lifecycle atoms."
   [driver topic-config deserializers]
   (let [continue? (atom true)
         messages  (s/stream 1 (comp
@@ -134,6 +143,9 @@
      :continue? continue?}))
 
 (defn mock-producer
+  "Builds a test-machine producer over TopologyTestDriver `driver` that
+  serializes input records with `serializers` and pipes them into the topology,
+  calling `on-input` for each fed record."
   [driver topic-config serializers on-input]
   (let [build-record (with-input-record topic-config)
         messages (s/stream 1 (map (fn [x]

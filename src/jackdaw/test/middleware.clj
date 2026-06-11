@@ -5,6 +5,8 @@
 (set! *warn-on-reflection* true)
 
 (defn with-status
+  "Command-handler middleware: wraps handler `f` so each result map is tagged
+  with `:status :error` when it contains an `:error`, otherwise `:status :ok`."
   [f]
   (fn [machine cmd]
     (let [result (f machine cmd)]

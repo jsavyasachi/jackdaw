@@ -171,12 +171,19 @@
     (.getCanonicalName (class x))
     "nil"))
 
-(defn serialization-error-msg [x expected-type]
+(defn serialization-error-msg
+  "Returns a human-readable message stating that value `x` (by class) is not a
+  valid value for the Avro `expected-type`."
+  [x expected-type]
   (format "%s is not a valid type for %s"
           (class-name x)
           expected-type))
 
-(defn validate-clj! [this x path expected-type]
+(defn validate-clj!
+  "Throws an ex-info wrapping an AvroTypeException when `x` does not match the
+  coercion `this` for the Avro `expected-type`; otherwise returns nil. `path`
+  records the location within the record for error reporting."
+  [this x path expected-type]
   (when-not (match-clj? this x)
     (throw (ex-info (serialization-error-msg x expected-type)
                     {:path path, :data x}
@@ -240,7 +247,10 @@
     (validate-clj! this x path "double")
     x))
 
-(defn single-float? [x]
+(defn single-float?
+  "Returns true if `x` is a single-precision java.lang.Float (as opposed to a
+  double-precision Double)."
+  [x]
   (instance? Float x))
 
 (defrecord FloatType []

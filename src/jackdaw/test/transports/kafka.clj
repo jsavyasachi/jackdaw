@@ -30,6 +30,9 @@
   (kafka/subscribe consumer topic-config))
 
 (defn load-assignments
+  "Polls `consumer` until Kafka has actually assigned its partitions (a 0ms poll
+  does not complete the group rebalance under Kafka 4.x), so a subsequent
+  seek-to-end operates on a non-empty assignment."
   [consumer]
   ;; A 0ms poll does not complete the group rebalance under Kafka 4.x, so the
   ;; subsequent seek-to-end would no-op on an empty assignment. Poll until the
@@ -138,11 +141,16 @@
      :continue? continue?}))
 
 (defn close-consumer
+  "Signals the `consumer`'s polling loop to stop and blocks until it has
+  finished."
   [consumer]
   (reset! (:continue? consumer) false)
   (deref (:process consumer)))
 
-(defn set-headers [^ProducerRecord producer-record headers]
+(defn set-headers
+  "Adds each entry of the `headers` map onto `producer-record`'s Kafka record
+  headers, returning the record."
+  [^ProducerRecord producer-record headers]
   (let [record-headers (.headers producer-record)]
     (doseq [[k v] headers]
       (.add record-headers k v)))

@@ -15,7 +15,10 @@
                                                   :opt-un [::close
                                                            ::configure])))
 
-(defn new-serializer ^Serializer [args]
+(defn new-serializer
+  "Returns a Kafka Serializer backed by the functions in `args`: required
+  `:serialize` (fn of [topic data]) and optional `:close` / `:configure`."
+  ^Serializer [args]
   (fn-impl/map->FnSerializer args))
 
 (s/def ::deserialize fn?)
@@ -23,6 +26,9 @@
                                                     :opt-un [::close
                                                              ::configure])))
 
-(defn new-deserializer ^Deserializer [args]
+(defn new-deserializer
+  "Returns a Kafka Deserializer backed by the functions in `args`: required
+  `:deserialize` (fn of [topic data]) and optional `:close` / `:configure`."
+  ^Deserializer [args]
   (fn-impl/map->FnDeserializer args))
 

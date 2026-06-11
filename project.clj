@@ -1,4 +1,4 @@
-(defproject net.clojars.savya/jackdaw "1.3.2"
+(defproject net.clojars.savya/jackdaw "1.3.3"
   :description "A Clojure library for the Apache Kafka distributed streaming platform."
 
   :license {:name "BSD 3-clause"  :url "http://opensource.org/licenses/BSD-3-Clause"}

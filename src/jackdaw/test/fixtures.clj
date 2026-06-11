@@ -27,6 +27,7 @@
     (.configs (:config t))))
 
 (defn list-topics
+  "Returns the AdminClient ListTopicsResult for `client`."
   [client]
   (.listTopics client))
 
@@ -146,6 +147,9 @@
 ;; system readyness
 
 (defn service-ready?
+  "Returns a clojure.test fixture fn that polls `:http-url` (with `:http-params`)
+  until it responds 200, within `:timeout` ms, then runs the test; throws if the
+  service never becomes ready."
   [{:keys [http-url http-params timeout]}]
   (fn [t]
     (let [ok? (fn [x]
@@ -169,7 +173,9 @@
                                 timeout)
                         {}))))))
 
-(defn delete-recursively [fname]
+(defn delete-recursively
+  "Recursively deletes the file or directory `fname` and its contents."
+  [fname]
   (let [func (fn [func f]
                (when (.isDirectory f)
                  (doseq [f2 (.listFiles f)]
@@ -177,7 +183,10 @@
                (clojure.java.io/delete-file f))]
     (func func (clojure.java.io/file fname))))
 
-(defn empty-state-fixture [app-config]
+(defn empty-state-fixture
+  "Returns a clojure.test fixture fn that deletes the Kafka Streams local state
+  directory for `app-config`'s application id before running the test."
+  [app-config]
   (fn [t]
     (let [state-dir (format "%s/%s"
                             (or (get app-config "state.dir")
@@ -191,6 +200,8 @@
 ;;; reset-application-fixture ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn default-reset-fn
+  "Runs Kafka's StreamsResetter `rt` with the string `args` vector to reset an
+  application's offsets and internal topics."
   [rt args]
   ;; Kafka 4.0's org.apache.kafka.tools.StreamsResetter exposes execute(String[])
   ;; (the old Scala kafka.tools.StreamsResetter had run(String[])).
@@ -232,6 +243,10 @@
                          result))))))))
 
 (defn integration-fixture
+  "Returns a joined clojure.test fixture. When `:enable?` is truthy it provisions
+  `:topic-metadata` against `:broker-config`, resets the application, and starts
+  the topology built by `(build-fn topic-metadata)`; otherwise it only clears
+  local state."
   [build-fn {:keys [broker-config
                     topic-metadata
                     app-config
@@ -249,6 +264,7 @@
        [(empty-state-fixture app-config)]))))
 
 (defmacro with-fixtures
+  "Runs `body` with the joined clojure.test `fixtures` applied around it."
   [fixtures & body]
   `((t/join-fixtures ~fixtures)
     (fn []

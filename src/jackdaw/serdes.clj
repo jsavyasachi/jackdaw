@@ -10,6 +10,7 @@
 (set! *warn-on-reflection* true)
 
 (defn string-serde
+  "Returns the Kafka built-in String serde (UTF-8 encoded keys/values)."
   []
   (Serdes/String))
 

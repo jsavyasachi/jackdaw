@@ -24,6 +24,7 @@
 (def ok? #{200 204})
 
 (defn uuid
+  "Returns a random UUID string, used to name REST-proxy consumer instances."
   []
   (str (UUID/randomUUID)))
 
@@ -40,6 +41,8 @@
       (.decode decoder decodable))))
 
 (defn undatafy-record
+  "Converts a datafied record map `m` back into the plain shape expected when
+  posting to the Kafka REST proxy."
   [_topic-metadata m]
   (-> m
       (update :key base64-decode)
@@ -50,11 +53,15 @@
    :json "application/vnd.kafka.v2+json"})
 
 (defn rest-proxy-headers
+  "Returns the Confluent REST proxy HTTP headers: the binary v2 content-type and
+  the given `accept` value."
   [accept]
   {"Content-Type" "application/vnd.kafka.binary.v2+json"
    "Accept"       accept})
 
 (defn handle-proxy-request
+  "Performs an HTTP `method` request to the REST proxy `url` with `headers` and
+  `body`, returning a deferred of the parsed response."
   [method url headers body]
   (let [req {:throw-exceptions? false
              :headers headers
@@ -92,6 +99,7 @@
          %))))
 
 (defn destroy-consumer
+  "Deletes the REST proxy consumer instance at `:base-uri`."
   [{:keys [base-uri]}]
   (let [url base-uri
         headers {"Accept" (content-types :json)}
@@ -102,6 +110,8 @@
           (throw (ex-info "Failed to destroy consumer after use" {})))))))
 
 (defn topic-post
+  "POSTs `msg` to the REST proxy's `topics/<name>` endpoint, invoking `callback`
+  with the result."
   [{:keys [bootstrap-uri]} msg callback]
   (let [url (format "%s/topics/%s"
                     bootstrap-uri
@@ -126,17 +136,23 @@
                             subscription
                             group-config])
 
-(defn proxy-client-info [client]
+(defn proxy-client-info
+  "Returns a small descriptive map for `client` (its `:bootstrap-uri` and a stable
+  hex id) for logging."
+  [client]
   (let [object-id (-> (.hashCode client)
                       (Integer/toHexString))]
     (-> (select-keys client [:bootstrap-uri])
         (assoc :id object-id))))
 
 (defn rest-proxy-client
+  "Constructs a RestProxyClient from `config`."
   [config]
   (map->RestProxyClient config))
 
 (defn with-consumer
+  "Creates a REST proxy consumer instance for `client` and returns the client
+  augmented with that consumer's `:base-uri`."
   [{:keys [bootstrap-uri group-id group-config] :as client}]
   (let [id (uuid)
         url (format "%s/consumers/%s"
@@ -164,6 +180,8 @@
              (assoc client :base-uri base-uri, :instance-id instance-id))))))))
 
 (defn with-subscription
+  "Subscribes the REST proxy `client`'s consumer to the topics in
+  `topic-metadata`, returning the client."
   [{:keys [base-uri] :as client} topic-metadata]
   (let [url (format "%s/subscription" base-uri)
         topics (map :topic-name (vals topic-metadata))
@@ -192,6 +210,8 @@
           (:json-body response))))))
 
 (defn rest-proxy-subscription
+  "Builds a REST proxy client from `config`, creates a consumer, and subscribes
+  it to `topic-metadata`, returning a deferred of the ready client."
   [config topic-metadata]
   (d/chain (rest-proxy-client config)
     #(with-consumer %)
@@ -244,7 +264,10 @@
      :messages messages
      :continue? continue?}))
 
-(defn build-record [m]
+(defn build-record
+  "Builds the REST-proxy record payload (key/value/partition/topic) from the
+  test-machine message `m`."
+  [m]
   (let [data (-> (select-keys m [:key :value :partition])
                  (assoc :topic (get-in m [:topic :topic-name]))
                  (update :key base64-encode)

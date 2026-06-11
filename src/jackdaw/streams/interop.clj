@@ -29,28 +29,45 @@
 
 (set! *warn-on-reflection* true)
 
-(defn topic->consumed [{:keys [key-serde value-serde]}]
+(defn topic->consumed
+  "Builds a Kafka Streams `Consumed` from a topic config's `:key-serde` and
+  `:value-serde`."
+  [{:keys [key-serde value-serde]}]
   (Consumed/with key-serde value-serde))
 
-(defn topic->produced [{:keys [key-serde value-serde partition-fn]}]
+(defn topic->produced
+  "Builds a Kafka Streams `Produced` from a topic config's serdes, attaching a
+  custom stream partitioner when `:partition-fn` is present."
+  [{:keys [key-serde value-serde partition-fn]}]
   (if partition-fn
     (Produced/with key-serde value-serde (->FnStreamPartitioner partition-fn))
     (Produced/with key-serde value-serde)))
 
-(defn topic->repartitioned [{:keys [topic-name key-serde value-serde partition-fn]}]
+(defn topic->repartitioned
+  "Builds a Kafka Streams `Repartitioned` from a topic config's serdes, applying
+  `:topic-name` and a `:partition-fn` partitioner when present."
+  [{:keys [topic-name key-serde value-serde partition-fn]}]
   (cond-> (Repartitioned/with key-serde value-serde)
     topic-name (.withName ^String topic-name)
     partition-fn (.withStreamPartitioner (->FnStreamPartitioner partition-fn))))
 
-(defn topic->grouped [{:keys [key-serde value-serde]}]
+(defn topic->grouped
+  "Builds a Kafka Streams `Grouped` from a topic config's `:key-serde` and
+  `:value-serde`."
+  [{:keys [key-serde value-serde]}]
   (Grouped/with key-serde value-serde))
 
-(defn topic->materialized [{:keys [topic-name key-serde value-serde]}]
+(defn topic->materialized
+  "Builds a Kafka Streams `Materialized` store named by `:topic-name`, applying
+  the topic config's key/value serdes when present."
+  [{:keys [topic-name key-serde value-serde]}]
   (cond-> (Materialized/as ^String topic-name)
     key-serde (.withKeySerde key-serde)
     value-serde (.withValueSerde value-serde)))
 
 (defn suppress-config->suppressed
+  "Builds a Kafka Streams `Suppressed` from a suppression config, choosing the
+  buffer bound from `:max-records`, `:max-bytes`, or `:until-time-limit-ms`."
   [{:keys [max-records max-bytes until-time-limit-ms]}]
   (let [config (cond
                  (not (nil? max-records))

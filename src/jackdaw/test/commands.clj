@@ -18,6 +18,9 @@
          watch-command))
 
 (defn command-handler
+  "Dispatches test-machine command `cmd` (a `[command & params]` vector) to its
+  handler in `command-map`, running it against `machine` and returning
+  `{:result _ :cmd _ :params _}`; throws an ex-info on an unknown command."
   [machine cmd]
   (let [[cmd & params] cmd
         handler (get command-map cmd)]
@@ -37,6 +40,7 @@
                        :available-commands (keys command-map)})))))
 
 (defn with-handler
+  "Returns `machine` with its `:command-handler` set to `handler`."
   [machine handler]
   (assoc machine
          :command-handler handler))

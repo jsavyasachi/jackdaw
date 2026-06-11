@@ -77,6 +77,7 @@
    (p/left-join kstream ktable value-joiner-fn this-topic-config other-topic-config)))
 
 (defn filter
+  "Creates a KStream that consists of all elements that satisfy a predicate."
   [kstream predicate-fn]
   (p/filter kstream predicate-fn))
 
@@ -235,14 +236,21 @@
    (p/flat-transform-values kstream value-transformer-supplier-fn state-store-names)))
 
 (defn join-global
+  "Inner-joins each record of `kstream` to a record in `global-ktable`, looking
+  up the table by the key returned from `(kv-mapper k v)` and combining the
+  values with `joiner`. Records with no matching table entry are dropped."
   [kstream global-ktable kv-mapper joiner]
   (p/join-global kstream global-ktable kv-mapper joiner))
 
 (defn left-join-global
+  "Like `join-global`, but keeps each `kstream` record even when `global-ktable`
+  has no entry for `(kv-mapper k v)`, calling `joiner` with a nil table value."
   [kstream global-ktable kv-mapper joiner]
   (p/left-join-global kstream global-ktable kv-mapper joiner))
 
 (defn merge
+  "Merges `kstream` and `other` into a single KStream containing all of their
+  records."
   [kstream other]
   (p/merge kstream other))
 
@@ -335,6 +343,7 @@
   (p/global-ktable* globalktable))
 
 (defn streams-builder
+  "Returns a new, empty streams-builder, the entry point for defining a topology."
   []
   (interop/streams-builder))
 
@@ -356,8 +365,14 @@
   [kafka-streams]
   (.close ^KafkaStreams kafka-streams))
 
-(defn state->keyword [^KafkaStreams$State state]
+(defn state->keyword
+  "Converts a KafkaStreams$State enum value to a lower-cased, dash-separated
+  keyword (e.g. RUNNING -> :running, NOT_RUNNING -> :not-running)."
+  [^KafkaStreams$State state]
   (-> state .name str/lower-case (str/replace #"_" "-") keyword))
 
-(defn state [^KafkaStreams k-streams]
+(defn state
+  "Returns the current lifecycle state of `k-streams` as a keyword (see
+  `state->keyword`)."
+  [^KafkaStreams k-streams]
   (-> k-streams .state state->keyword))

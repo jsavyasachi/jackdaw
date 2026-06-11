@@ -103,21 +103,29 @@
                             @jloop)]))))
 
 (defn raw-messages
+  "Returns the journalled records for `topic-name`, ordered by offset, including
+  their metadata (key, value, offset, etc.)."
   [journal topic-name]
   (sort-by :offset (get-in journal [:topics topic-name])))
 
 (defn messages
+  "Returns the values of the journalled records for `topic-name`, ordered by
+  offset."
   [journal topic-name]
   (->> (raw-messages journal topic-name)
        (map :value)))
 
 (defn messages-by-kv-fn
+  "Returns the journalled message values for `topic-name` whose value at the
+  key-path `ks` satisfies `pred`."
   [journal topic-name ks pred]
   (->> (messages journal topic-name)
        (filter (fn [m]
                  (pred (get-in m ks))))))
 
 (defn messages-by-kv
+  "Returns the journalled message values for `topic-name` whose value at the
+  key-path `ks` equals `value`."
   [journal topic-name ks value]
   (messages-by-kv-fn journal topic-name ks #(= value %)))
 

@@ -12,7 +12,10 @@
 
 ;; Access to various serdes
 
-(defn resolver [topic-config]
+(defn resolver
+  "Returns a fn that resolves a serde keyword (:edn, :json, :long, :string, ...)
+  in `topic-config` to a concrete Kafka serde instance."
+  [topic-config]
   (let [serde-lookup {:edn (edn-serde/serde)
                       :json (json-serde/serde)
                       :long (Serdes/Long)
@@ -45,6 +48,8 @@
         (.serialize topic-name k))))
 
 (defn serialize-value
+  "Serializes value `v` for topic `t` using its `:value-serde`, returning nil
+  when `v` is nil."
   [v {topic-name :topic-name
       value-serde :value-serde :as t}]
   (when v
@@ -105,11 +110,15 @@
        (into {})))
 
 (defn serde-map
+  "Returns `{:serializers _ :deserializers _}`, each a map of topic-name to the
+  corresponding serializer/deserializer fn for `topic-config`."
   [topic-config]
   {:serializers (serializers topic-config)
    :deserializers (deserializers topic-config)})
 
 (defn apply-serializers
+  "Serializes message `m` using the serializer registered for its topic in
+  `serializers`; throws IllegalArgumentException for an unknown topic."
   [serializers m]
   (let [topic (:topic m)
         serialize (get serializers (:topic-name topic))]
@@ -119,6 +128,8 @@
       (serialize m))))
 
 (defn apply-deserializers
+  "Deserializes record `m` using the deserializer registered for its topic in
+  `deserializers`; throws IllegalArgumentException for an unknown topic."
   [deserializers m]
   (let [topic-name (:topic m)
         deserialize (get deserializers topic-name)]

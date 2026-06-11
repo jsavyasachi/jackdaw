@@ -275,6 +275,8 @@
        (into {})))
 
 (defn end-offsets
+  "Returns a map of {topic-partition end-offset} for `partitions`, where the end
+  offset is one past the last message (the next offset that would be produced)."
   [^Consumer consumer partitions]
   (->> partitions
        (map (fn [topic-partition]

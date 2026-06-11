@@ -239,6 +239,8 @@
   properties)
 
 (defn mock-test-driver
+  "Builds a Kafka `TopologyTestDriver` from the topology produced by
+  `(build-fn streams-builder)`, configured with the `app-config` properties."
   [build-fn app-config]
   (let [builder (k/streams-builder)
         topology (let [builder (build-fn builder)]

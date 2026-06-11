@@ -41,9 +41,13 @@
   (constantly nil))
 
 (defn EdnSerde-serializer
+  "Backing fn for the EdnSerde gen-class `serializer` method; returns an EDN
+  serializer."
   [& _]
   (edn-serializer))
 
 (defn EdnSerde-deserializer
+  "Backing fn for the EdnSerde gen-class `deserializer` method; returns an EDN
+  deserializer."
   [& _]
   (edn-deserializer))

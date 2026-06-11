@@ -17,6 +17,9 @@
   ([watch-query opts] [watch-query (:info opts) (watch-timeout (:timeout opts))]))
 
 (defn handle-watch-cmd
+  "Handler for the `:watch` command. Blocks until the watch query (a predicate
+  over the journal) passed in `params` is satisfied or its timeout elapses (see
+  `jackdaw.test/watch-for`)."
   [machine params]
   (let [[query info timeout] (apply watch-params params)
         condition? query]

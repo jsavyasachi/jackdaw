@@ -17,6 +17,8 @@
   {:from from :to to})
 
 (defn base-node
+  "Returns the base graph fragment `{:nodes :edges}` for topology node `n` typed
+  `t`, with edges connecting it to its predecessor and successor nodes."
   [t n]
   {:nodes [{:type t
             :name (.name ^TopologyDescription$Node n)}]
@@ -29,6 +31,8 @@
                 (.successors ^TopologyDescription$Node n)))})
 
 (defn describe-node-dispatch
+  "Dispatch fn for `describe-node`: the lower-cased simple class name of node `n`
+  as a keyword (e.g. :source, :sink, :processor, :globalstore, :subtopology)."
   [n]
   (keyword (str/lower-case (.getSimpleName ^Class (.getClass ^Object n)))))
 
@@ -81,10 +85,15 @@
      :edges (set (mapcat :edges nodes))}))
 
 (defn topic?
+  "Returns true if graph node `s` is a topic node (`:type :topic`)."
   [s]
   (= :topic (:type s)))
 
 (defn gen-id
+  "Returns a deterministic v5 UUID for graph node/graph `n` within
+  `applicaton-id` (topic nodes use a global namespace instead), so the same node
+  in the same application always gets the same id across describe calls and can
+  be merged across applications."
   [applicaton-id n]
   ;; Take a base UUID from the application id, or a global one for topics
   (let [ns-id (uuid/v5 uuid/+null+ (if (topic? n)
@@ -97,10 +106,13 @@
     (uuid/v5 ns-id (:name n))))
 
 (defn assign-id
+  "Assigns a deterministic `:id` (via `gen-id`) to graph node `n`."
   [applicaton-id n]
   (assoc n :id (gen-id applicaton-id n)))
 
 (defn assign-ids
+  "Assigns deterministic `:id`s to graph `g` and each of its nodes, then resolves
+  every edge's `:from-id`/`:to-id` from the node names."
   [applicaton-id g]
   (let [g* (-> (update g :nodes (fn [v]
                                   (map (partial assign-id applicaton-id) v)))
@@ -114,14 +126,19 @@
                                       :to-id (:id (lookup (:to e))))) v)))))
 
 (defn is-merge?
+  "Returns true if node name `n` is a Kafka Streams merge node (\"KSTREAM-MERGE...\")."
   [n]
   (str/starts-with? n "KSTREAM-MERGE"))
 
 (defn good-edge
+  "Returns true if edge `e` is not a self-loop (`:from-id` differs from `:to-id`)."
   [e]
   (not= (:from-id e) (:to-id e)))
 
 (defn collapse-merge-chains
+  "Collapses a chain of pairwise Kafka merge nodes in graph `g` into a single
+  N-way merge, rewriting edges onto the head merge node and pruning the redundant
+  intermediate nodes."
   [g]
   ;; all kafka merges are pairwise, so if you merge lots of topics the graph ends up with
   ;; a long chain of merges all in a row which is messy. This collapses chains of pair-wise
@@ -160,6 +177,9 @@
                                  nodes))))))
 
 (defn parse-description
+  "Parses a Kafka `TopologyDescription` `d` into a sequence of id-assigned,
+  merge-collapsed stream graphs (one per subtopology and per global store) scoped
+  to `applicaton-id`."
   [applicaton-id d]
   (let [parser (comp collapse-merge-chains
                      (partial assign-ids applicaton-id)
