@@ -13,6 +13,11 @@ Jackdaw is a Clojure library for the Apache Kafka distributed streaming platform
 > coordinate, `net.clojars.savya/jackdaw`. See the [CHANGELOG](CHANGELOG.md) for the
 > 4.x migration notes.
 
+## Stack
+
+<a href="https://clojure.org"><img src="https://img.shields.io/badge/Clojure-5881D8?style=flat&logo=clojure&logoColor=fff" alt="Clojure" /></a>
+<a href="https://kafka.apache.org"><img src="https://img.shields.io/badge/Apache%20Kafka-231F20?style=flat&logo=apachekafka&logoColor=fff" alt="Apache Kafka" /></a>
+
 ## Installation
 
 Leiningen / Boot:
@@ -31,9 +36,9 @@ Jackdaw resolves Confluent artifacts from the Confluent Maven repository; add
 `https://packages.confluent.io/maven/` to your `:repositories` (Leiningen) or
 `:mvn/repos` (deps.edn).
 
-# Supported versions
+## Supported versions
 
-Jackdaw 1.3.2 requires **Clojure >= 1.10**, **JDK 17+**, and **Apache Kafka 4.x** /
+Jackdaw 1.3.3 requires **Clojure >= 1.10**, **JDK 17+**, and **Apache Kafka 4.x** /
 **Confluent Platform 8.x** brokers. (The Clojure floor is set by the `datafy` protocol,
 introduced in 1.10.)
 
