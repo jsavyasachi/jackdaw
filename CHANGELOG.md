@@ -2,6 +2,10 @@
 
 ### Unreleased
 
+### [1.3.4] - [2026-06-14]
+
+- Standardize README structure and badges (docs only).
+
 ### [1.3.3] - [2026-06-11]
 
 - Add docstrings to the 95 public functions/macros that were missing them
