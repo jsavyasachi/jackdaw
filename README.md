@@ -1,4 +1,4 @@
-# Jackdaw
+# jackdaw
 
 [![Clojars Project](https://img.shields.io/clojars/v/net.clojars.savya/jackdaw.svg)](https://clojars.org/net.clojars.savya/jackdaw)
 [![cljdoc](https://cljdoc.org/badge/net.clojars.savya/jackdaw)](https://cljdoc.org/d/net.clojars.savya/jackdaw/CURRENT)
