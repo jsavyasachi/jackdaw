@@ -2,6 +2,14 @@
 
 ### Unreleased
 
+### [1.3.5] - [2026-06-16]
+
+- Dependency currency: aleph 0.6.1 -> 0.9.9 (test transport), manifold
+  0.4.0 -> 0.5.0, danlentz/clj-uuid 0.1.9 -> 0.2.5, metosin/jsonista
+  0.3.7 -> 1.0.0. Jackson stays pinned at 2.21.2 (core + databind) so the
+  Kafka/Confluent/Avro alignment is unaffected. Validated against the live
+  KRaft broker (115 tests / 837 assertions).
+
 ### [1.3.4] - [2026-06-14]
 
 - Standardize README structure and badges (docs only).
