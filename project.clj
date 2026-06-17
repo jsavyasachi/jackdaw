@@ -10,8 +10,8 @@
   :repositories [["confluent" {:url "https://packages.confluent.io/maven/"}]
                  ["mulesoft" {:url "https://repository.mulesoft.org/nexus/content/repositories/public/"}]]
 
-  :dependencies [[manifold/manifold "0.4.0"]
-                 [danlentz/clj-uuid "0.1.9"
+  :dependencies [[manifold/manifold "0.5.0"]
+                 [danlentz/clj-uuid "0.2.5"
                   :exclusions [primitive-math]]
 
                  ;; Confluent does paired releases with Kafka, this should tie
@@ -25,11 +25,10 @@
                  [org.apache.kafka/kafka-streams "4.3.0"]
                  [org.apache.kafka/kafka-streams-test-utils "4.3.0"]
 
-                 ;; Align Jackson across Kafka 4.x / Confluent / Avro. Without this,
-                 ;; jsonista 0.3.7 drags jackson-core down to 2.14.1 while databind
-                 ;; resolves to 2.21.2, so databind references
-                 ;; com.fasterxml.jackson.core.exc.StreamConstraintsException
-                 ;; (jackson-core >= 2.15) which is absent -> ClassNotFoundException.
+                 ;; Align Jackson across Kafka 4.x / Confluent / Avro. Pin both
+                 ;; jackson-core and -databind to the same line so a transitive dep
+                 ;; can't split them (databind >= 2.15 references jackson-core's
+                 ;; StreamConstraintsException; a mismatched core -> ClassNotFoundException).
                  [com.fasterxml.jackson.core/jackson-core "2.21.2"]
                  [com.fasterxml.jackson.core/jackson-databind "2.21.2"]
 
@@ -39,7 +38,7 @@
                  [org.clojure/data.fressian "1.0.0"]
                  [org.clojure/tools.logging "1.2.4"]
                  [org.clojure/core.cache "1.0.225"]
-                 [metosin/jsonista "0.3.7"]]
+                 [metosin/jsonista "1.0.0"]]
 
   :aliases {"kaocha" ["run" "-m" "kaocha.runner"]}
   :aot [jackdaw.serdes.edn2 jackdaw.serdes.fressian jackdaw.serdes.fn-impl]
@@ -75,7 +74,7 @@
                              ;; whose io.aviso.exception/update-keys collides with
                              ;; clojure.core/update-keys (Clojure 1.11+).
                              [io.aviso/pretty "1.4.4"]
-                             [aleph/aleph "0.6.1"]
+                             [aleph/aleph "0.9.9"]
                              [org.apache.kafka/kafka-streams-test-utils "4.3.0"]
                              [org.apache.kafka/kafka-clients "4.3.0" :classifier "test"]
                              [org.clojure/test.check "1.1.1"]
