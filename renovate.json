@@ -1,0 +1,46 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", "helpers:pinGitHubActionDigests"],
+  "minimumReleaseAge": "10 days",
+  "internalChecksFilter": "strict",
+  "schedule": ["before 6am on monday"],
+  "dependencyDashboard": true,
+  "labels": ["dependencies"],
+  "description": "Leiningen project.clj is read via a custom regex manager + the clojure datasource. Kafka and Confluent are grouped and pinned to their own registries; major bumps wait for manual approval (they need live-broker validation).",
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/(^|/)project\\.clj$/"],
+      "matchStrings": ["\\[(?<depName>[\\w.-]+/[\\w.-]+)\\s+\"(?<currentValue>[^\"]+)\""],
+      "datasourceTemplate": "clojure"
+    }
+  ],
+  "packageRules": [
+    {
+      "description": "Resolve Apache Kafka against Maven Central only, so Confluent's republished 8.x-ce builds never masquerade as upgrades.",
+      "matchPackageNames": ["/^org\\.apache\\.kafka/"],
+      "registryUrls": ["https://repo.maven.apache.org/maven2"]
+    },
+    {
+      "description": "Confluent client libs come from Confluent's repo (Maven Central as fallback).",
+      "matchPackageNames": ["/^io\\.confluent/"],
+      "registryUrls": ["https://packages.confluent.io/maven/", "https://repo.maven.apache.org/maven2"]
+    },
+    {
+      "description": "Kafka and Confluent ship paired releases - move them together.",
+      "matchPackageNames": ["/^org\\.apache\\.kafka/", "/^io\\.confluent/"],
+      "groupName": "kafka"
+    },
+    {
+      "description": "Major Kafka/Confluent bumps need live-broker validation - gate behind manual approval.",
+      "matchPackageNames": ["/^org\\.apache\\.kafka/", "/^io\\.confluent/"],
+      "matchUpdateTypes": ["major"],
+      "dependencyDashboardApproval": true
+    },
+    {
+      "description": "Keep jackson-core and jackson-databind on the same line.",
+      "matchPackageNames": ["com.fasterxml.jackson.core/jackson-core", "com.fasterxml.jackson.core/jackson-databind"],
+      "groupName": "jackson"
+    }
+  ]
+}
