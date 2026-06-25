@@ -18,6 +18,11 @@
   ],
   "packageRules": [
     {
+      "description": "Default: resolve all Clojure deps from Clojars + Maven Central.",
+      "matchDatasources": ["clojure"],
+      "registryUrls": ["https://repo.clojars.org", "https://repo.maven.apache.org/maven2"]
+    },
+    {
       "description": "Resolve Apache Kafka against Maven Central only, so Confluent's republished 8.x-ce builds never masquerade as upgrades.",
       "matchPackageNames": ["/^org\\.apache\\.kafka/"],
       "registryUrls": ["https://repo.maven.apache.org/maven2"]
