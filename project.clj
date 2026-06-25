@@ -77,7 +77,7 @@
                              [aleph/aleph "0.9.9"]
                              [org.apache.kafka/kafka-streams-test-utils "4.3.0"]
                              [org.apache.kafka/kafka-clients "4.3.0" :classifier "test"]
-                             [org.clojure/test.check "1.1.1"]
+                             [org.clojure/test.check "1.1.3"]
                              [org.apache.kafka/kafka_2.13 "4.3.0"]
                              ;; ships org.apache.kafka.tools.StreamsResetter, used by
                              ;; reset-application-fixture (Kafka 4.0 moved it out of
