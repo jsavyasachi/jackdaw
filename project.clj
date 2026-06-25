@@ -17,32 +17,32 @@
                  ;; Confluent does paired releases with Kafka, this should tie
                  ;; off with the kafka version.
                  ;; See https://docs.confluent.io/current/release-notes.html
-                 [io.confluent/kafka-schema-registry-client "8.2.1"
+                 [io.confluent/kafka-schema-registry-client "8.3.0"
                   :exclusions [com.fasterxml.jackson.core/jackson-databind]]
-                 [io.confluent/kafka-avro-serializer "8.2.1"]
-                 [io.confluent/kafka-json-schema-serializer "8.2.1"]
-                 [org.apache.kafka/kafka-clients "4.3.0"]
-                 [org.apache.kafka/kafka-streams "4.3.0"]
-                 [org.apache.kafka/kafka-streams-test-utils "4.3.0"]
+                 [io.confluent/kafka-avro-serializer "8.3.0"]
+                 [io.confluent/kafka-json-schema-serializer "8.3.0"]
+                 [org.apache.kafka/kafka-clients "8.3.0-ce"]
+                 [org.apache.kafka/kafka-streams "8.3.0-ce"]
+                 [org.apache.kafka/kafka-streams-test-utils "8.3.0-ce"]
 
                  ;; Align Jackson across Kafka 4.x / Confluent / Avro. Pin both
                  ;; jackson-core and -databind to the same line so a transitive dep
                  ;; can't split them (databind >= 2.15 references jackson-core's
                  ;; StreamConstraintsException; a mismatched core -> ClassNotFoundException).
-                 [com.fasterxml.jackson.core/jackson-core "2.21.2"]
-                 [com.fasterxml.jackson.core/jackson-databind "2.21.2"]
+                 [com.fasterxml.jackson.core/jackson-core "2.22.0"]
+                 [com.fasterxml.jackson.core/jackson-databind "2.22.0"]
 
                  [org.clojure/clojure "1.12.5" :scope "provided"]
-                 [org.clojure/java.data "1.0.95"]
+                 [org.clojure/java.data "1.4.120"]
                  [org.clojure/data.json "2.5.2"]
-                 [org.clojure/data.fressian "1.0.0"]
-                 [org.clojure/tools.logging "1.2.4"]
-                 [org.clojure/core.cache "1.0.225"]
+                 [org.clojure/data.fressian "1.1.1"]
+                 [org.clojure/tools.logging "1.3.1"]
+                 [org.clojure/core.cache "1.2.263"]
                  [metosin/jsonista "1.0.0"]]
 
   :aliases {"kaocha" ["run" "-m" "kaocha.runner"]}
   :aot [jackdaw.serdes.edn2 jackdaw.serdes.fressian jackdaw.serdes.fn-impl]
-  :plugins [[com.github.clj-kondo/lein-clj-kondo "0.2.5"]]
+  :plugins [[com.github.clj-kondo/lein-clj-kondo "2026.05.25"]]
 
   :profiles {;; Provide an alternative to :leiningen/default, used to include :shared
              :default
@@ -75,15 +75,15 @@
                              ;; clojure.core/update-keys (Clojure 1.11+).
                              [io.aviso/pretty "1.4.4"]
                              [aleph/aleph "0.9.9"]
-                             [org.apache.kafka/kafka-streams-test-utils "4.3.0"]
-                             [org.apache.kafka/kafka-clients "4.3.0" :classifier "test"]
-                             [org.clojure/test.check "1.1.1"]
-                             [org.apache.kafka/kafka_2.13 "4.3.0"]
+                             [org.apache.kafka/kafka-streams-test-utils "8.3.0-ce"]
+                             [org.apache.kafka/kafka-clients "8.3.0-ce" :classifier "test"]
+                             [org.clojure/test.check "1.1.3"]
+                             [org.apache.kafka/kafka_2.13 "8.3.0-ce"]
                              ;; ships org.apache.kafka.tools.StreamsResetter, used by
                              ;; reset-application-fixture (Kafka 4.0 moved it out of
                              ;; kafka_2.13 into the kafka-tools jar).
-                             [org.apache.kafka/kafka-tools "4.3.0"]
-                             [lambdaisland/kaocha "1.80.1274"]
+                             [org.apache.kafka/kafka-tools "8.3.0-ce"]
+                             [lambdaisland/kaocha "1.91.1392"]
                              [lambdaisland/kaocha-cloverage "1.1.89"]
                              [lambdaisland/kaocha-junit-xml "1.17.101"]]}
 
