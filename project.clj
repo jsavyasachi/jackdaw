@@ -29,8 +29,8 @@
                  ;; jackson-core and -databind to the same line so a transitive dep
                  ;; can't split them (databind >= 2.15 references jackson-core's
                  ;; StreamConstraintsException; a mismatched core -> ClassNotFoundException).
-                 [com.fasterxml.jackson.core/jackson-core "2.21.2"]
-                 [com.fasterxml.jackson.core/jackson-databind "2.21.2"]
+                 [com.fasterxml.jackson.core/jackson-core "2.22.0"]
+                 [com.fasterxml.jackson.core/jackson-databind "2.22.0"]
 
                  [org.clojure/clojure "1.12.5" :scope "provided"]
                  [org.clojure/java.data "1.0.95"]
