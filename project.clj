@@ -33,7 +33,7 @@
                  [com.fasterxml.jackson.core/jackson-databind "2.22.0"]
 
                  [org.clojure/clojure "1.12.5" :scope "provided"]
-                 [org.clojure/java.data "1.0.95"]
+                 [org.clojure/java.data "1.4.120"]
                  [org.clojure/data.json "2.5.2"]
                  [org.clojure/data.fressian "1.0.0"]
                  [org.clojure/tools.logging "1.3.1"]
