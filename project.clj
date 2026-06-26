@@ -35,7 +35,7 @@
                  [org.clojure/clojure "1.12.5" :scope "provided"]
                  [org.clojure/java.data "1.4.120"]
                  [org.clojure/data.json "2.5.2"]
-                 [org.clojure/data.fressian "1.0.0"]
+                 [org.clojure/data.fressian "1.1.1"]
                  [org.clojure/tools.logging "1.3.1"]
                  [org.clojure/core.cache "1.0.225"]
                  [metosin/jsonista "1.0.0"]]
