@@ -83,7 +83,7 @@
                              ;; reset-application-fixture (Kafka 4.0 moved it out of
                              ;; kafka_2.13 into the kafka-tools jar).
                              [org.apache.kafka/kafka-tools "4.3.0"]
-                             [lambdaisland/kaocha "1.80.1274"]
+                             [lambdaisland/kaocha "1.91.1392"]
                              [lambdaisland/kaocha-cloverage "1.1.89"]
                              [lambdaisland/kaocha-junit-xml "1.17.101"]]}
 
