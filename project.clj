@@ -17,13 +17,13 @@
                  ;; Confluent does paired releases with Kafka, this should tie
                  ;; off with the kafka version.
                  ;; See https://docs.confluent.io/current/release-notes.html
-                 [io.confluent/kafka-schema-registry-client "8.2.1"
+                 [io.confluent/kafka-schema-registry-client "8.3.0"
                   :exclusions [com.fasterxml.jackson.core/jackson-databind]]
-                 [io.confluent/kafka-avro-serializer "8.2.1"]
-                 [io.confluent/kafka-json-schema-serializer "8.2.1"]
-                 [org.apache.kafka/kafka-clients "4.3.0"]
-                 [org.apache.kafka/kafka-streams "4.3.0"]
-                 [org.apache.kafka/kafka-streams-test-utils "4.3.0"]
+                 [io.confluent/kafka-avro-serializer "8.3.0"]
+                 [io.confluent/kafka-json-schema-serializer "8.3.0"]
+                 [org.apache.kafka/kafka-clients "4.3.1"]
+                 [org.apache.kafka/kafka-streams "4.3.1"]
+                 [org.apache.kafka/kafka-streams-test-utils "4.3.1"]
 
                  ;; Align Jackson across Kafka 4.x / Confluent / Avro. Pin both
                  ;; jackson-core and -databind to the same line so a transitive dep
@@ -75,14 +75,14 @@
                              ;; clojure.core/update-keys (Clojure 1.11+).
                              [io.aviso/pretty "1.4.4"]
                              [aleph/aleph "0.9.9"]
-                             [org.apache.kafka/kafka-streams-test-utils "4.3.0"]
-                             [org.apache.kafka/kafka-clients "4.3.0" :classifier "test"]
+                             [org.apache.kafka/kafka-streams-test-utils "4.3.1"]
+                             [org.apache.kafka/kafka-clients "4.3.1" :classifier "test"]
                              [org.clojure/test.check "1.1.3"]
-                             [org.apache.kafka/kafka_2.13 "4.3.0"]
+                             [org.apache.kafka/kafka_2.13 "4.3.1"]
                              ;; ships org.apache.kafka.tools.StreamsResetter, used by
                              ;; reset-application-fixture (Kafka 4.0 moved it out of
                              ;; kafka_2.13 into the kafka-tools jar).
-                             [org.apache.kafka/kafka-tools "4.3.0"]
+                             [org.apache.kafka/kafka-tools "4.3.1"]
                              [lambdaisland/kaocha "1.91.1392"]
                              [lambdaisland/kaocha-cloverage "1.1.89"]
                              [lambdaisland/kaocha-junit-xml "1.17.101"]]}
