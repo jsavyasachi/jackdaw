@@ -37,7 +37,7 @@
                  [org.clojure/data.json "2.5.2"]
                  [org.clojure/data.fressian "1.1.1"]
                  [org.clojure/tools.logging "1.3.1"]
-                 [org.clojure/core.cache "1.0.225"]
+                 [org.clojure/core.cache "1.2.263"]
                  [metosin/jsonista "1.0.0"]]
 
   :aliases {"kaocha" ["run" "-m" "kaocha.runner"]}
