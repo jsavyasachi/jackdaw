@@ -29,14 +29,14 @@
                  ;; jackson-core and -databind to the same line so a transitive dep
                  ;; can't split them (databind >= 2.15 references jackson-core's
                  ;; StreamConstraintsException; a mismatched core -> ClassNotFoundException).
-                 [com.fasterxml.jackson.core/jackson-core "2.21.2"]
-                 [com.fasterxml.jackson.core/jackson-databind "2.21.2"]
+                 [com.fasterxml.jackson.core/jackson-core "2.22.0"]
+                 [com.fasterxml.jackson.core/jackson-databind "2.22.0"]
 
                  [org.clojure/clojure "1.12.5" :scope "provided"]
-                 [org.clojure/java.data "1.0.95"]
+                 [org.clojure/java.data "1.4.120"]
                  [org.clojure/data.json "2.5.2"]
-                 [org.clojure/data.fressian "1.0.0"]
-                 [org.clojure/tools.logging "1.2.4"]
+                 [org.clojure/data.fressian "1.1.1"]
+                 [org.clojure/tools.logging "1.3.1"]
                  [org.clojure/core.cache "1.0.225"]
                  [metosin/jsonista "1.0.0"]]
 
@@ -77,7 +77,7 @@
                              [aleph/aleph "0.9.9"]
                              [org.apache.kafka/kafka-streams-test-utils "4.3.0"]
                              [org.apache.kafka/kafka-clients "4.3.0" :classifier "test"]
-                             [org.clojure/test.check "1.1.1"]
+                             [org.clojure/test.check "1.1.3"]
                              [org.apache.kafka/kafka_2.13 "4.3.0"]
                              ;; ships org.apache.kafka.tools.StreamsResetter, used by
                              ;; reset-application-fixture (Kafka 4.0 moved it out of
