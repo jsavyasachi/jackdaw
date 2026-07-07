@@ -2,6 +2,17 @@
 
 ### Unreleased
 
+### [1.3.6] - [2026-07-07]
+
+- Dependency currency: Kafka 4.3.0 -> 4.3.1, Confluent
+  (schema-registry-client, avro/json-schema serializers) 8.2.1 -> 8.3.0,
+  Jackson core/databind 2.21.2 -> 2.22.0, org.clojure/java.data 1.0.95 ->
+  1.4.120, data.fressian 1.0.0 -> 1.1.1, tools.logging 1.2.4 -> 1.3.1,
+  core.cache 1.0.225 -> 1.2.263. Validated against the live KRaft broker
+  (115 tests / 837 assertions).
+- Releases now publish to Clojars via a tag-triggered (`v*`) GitHub
+  Actions workflow instead of manual `lein deploy`.
+
 ### [1.3.5] - [2026-06-16]
 
 - Dependency currency: aleph 0.6.1 -> 0.9.9 (test transport), manifold
