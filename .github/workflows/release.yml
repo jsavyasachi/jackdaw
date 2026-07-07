@@ -1,0 +1,74 @@
+name: release
+
+# Publishes to Clojars when a v* tag is pushed. The tag is the deliberate
+# "this is worth a release" signal; nothing publishes on ordinary commits.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch: {}   # manual run for testing (skips the tag-version guard)
+
+permissions:
+  contents: write          # create the GitHub Release
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+
+      - name: set up JDK
+        uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520 # v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: set up Leiningen
+        uses: DeLaGuardo/setup-clojure@4c7a6f613e5089821bb3bb2a33a3ee115578580d # 13.6.1
+        with:
+          lein: 2.12.0
+
+      - name: cache ~/.m2
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-m2-${{ hashFiles('project.clj') }}
+          restore-keys: ${{ runner.os }}-m2-
+
+      - name: Verify tag matches project.clj version
+        if: github.ref_type == 'tag'
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          PROJ=$(sed -n '1s/[^"]*"\([0-9][^"]*\)".*/\1/p' project.clj)
+          echo "tag=$TAG project.clj=$PROJ"
+          if [ "$TAG" != "$PROJ" ]; then
+            echo "::error::tag v$TAG does not match project.clj version $PROJ"
+            exit 1
+          fi
+
+      # Single-node KRaft Kafka + schema-registry + kafka-rest (no ZooKeeper).
+      - name: start kafka stack
+        run: docker compose up -d --wait
+
+      - name: Test
+        run: lein test
+        env:
+          KAFKA_BOOTSTRAP_SERVERS: localhost
+          SCHEMA_REGISTRY_HOST: localhost
+          KAFKA_REST_PROXY_HOST: localhost
+
+      - name: stop kafka stack
+        if: always()
+        run: docker compose down -v || true
+
+      - name: Deploy to Clojars
+        env:
+          CLOJARS_USERNAME: ${{ secrets.CLOJARS_USERNAME }}
+          CLOJARS_PASSWORD: ${{ secrets.CLOJARS_PASSWORD }}
+        run: lein deploy clojars
+
+      - name: Create GitHub Release
+        if: github.ref_type == 'tag'
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
