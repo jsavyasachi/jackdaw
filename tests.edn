@@ -1,0 +1,10 @@
+#kaocha/v1
+{:tests
+ [{:id :unit
+   :test-paths ["test"]
+   :skip-meta [:integration]
+   ;; These namespaces contain untagged tests that require Kafka, schema
+   ;; registry, or REST proxy. Run every test with:
+   ;;   clojure -M:test --no-config
+   :ns-patterns
+   ["^(?!jackdaw\\.client-test$|jackdaw\\.test-test$|jackdaw\\.test\\.commands\\.write-test$|jackdaw\\.test\\.fixtures-test$|jackdaw\\.test\\.transports\\.(?:kafka|rest-proxy)-test$).*test$"]}]}

@@ -2,6 +2,12 @@
 
 ### Unreleased
 
+#### Changed
+
+- Make `deps.edn` and `tools.build` the canonical build, test, and release
+  toolchain. The default Kaocha suite now runs broker-free unit tests; the full
+  integration suite remains available for environments running the Kafka stack.
+
 ### [1.3.6] - [2026-07-07]
 
 - Dependency currency: Kafka 4.3.0 -> 4.3.1, Confluent

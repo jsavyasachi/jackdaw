@@ -1,0 +1,55 @@
+{:paths ["src" "resources"]
+
+ :mvn/repos
+ {"central" {:url "https://repo1.maven.org/maven2/"}
+  "clojars" {:url "https://repo.clojars.org/"}
+  "confluent" {:url "https://packages.confluent.io/maven/"}
+  "mulesoft" {:url "https://repository.mulesoft.org/nexus/content/repositories/public/"}}
+
+ :deps {org.clojure/clojure {:mvn/version "1.12.5"}
+        manifold/manifold {:mvn/version "0.5.0"}
+        danlentz/clj-uuid {:mvn/version "0.2.5" :exclusions [primitive-math/primitive-math]}
+        io.confluent/kafka-schema-registry-client {:mvn/version "8.3.0"
+                                                    :exclusions [com.fasterxml.jackson.core/jackson-databind]}
+        io.confluent/kafka-avro-serializer {:mvn/version "8.3.0"}
+        io.confluent/kafka-json-schema-serializer {:mvn/version "8.3.0"}
+        org.apache.kafka/kafka-clients {:mvn/version "4.3.1"}
+        org.apache.kafka/kafka-streams {:mvn/version "4.3.1"}
+        org.apache.kafka/kafka-streams-test-utils {:mvn/version "4.3.1"}
+        com.fasterxml.jackson.core/jackson-core {:mvn/version "2.22.0"}
+        com.fasterxml.jackson.core/jackson-databind {:mvn/version "2.22.0"}
+        org.clojure/java.data {:mvn/version "1.4.120"}
+        org.clojure/data.json {:mvn/version "2.5.2"}
+        org.clojure/data.fressian {:mvn/version "1.1.1"}
+        org.clojure/tools.logging {:mvn/version "1.3.1"}
+        org.clojure/core.cache {:mvn/version "1.2.263"}
+        metosin/jsonista {:mvn/version "1.0.0"}}
+
+ :aliases
+ {:test
+  {:extra-paths ["test" "dev" "test/resources" "target/classes"]
+   :extra-deps {io.aviso/logging {:mvn/version "1.0"}
+                io.aviso/pretty {:mvn/version "1.4.4"}
+                aleph/aleph {:mvn/version "0.9.9"}
+                org.apache.kafka/kafka-clients$test {:mvn/version "4.3.1"}
+                org.apache.kafka/kafka_2.13 {:mvn/version "4.3.1"}
+                org.apache.kafka/kafka-tools {:mvn/version "4.3.1"}
+                org.clojure/test.check {:mvn/version "1.1.3"}
+                lambdaisland/kaocha {:mvn/version "1.91.1392"}
+                lambdaisland/kaocha-cloverage {:mvn/version "1.1.89"}
+                lambdaisland/kaocha-junit-xml {:mvn/version "1.17.101"}}
+   ;; Kafka Streams resolves these gen-class/deftype serdes by JVM class name.
+   ;; Leiningen's :aot used to compile them before tests; reproduce that here.
+   :jvm-opts ["-Dclojure.compile.path=target/classes"]
+   :main-opts
+   ["-e"
+    "(do (.mkdirs (java.io.File. \"target/classes\")) (doseq [n '[jackdaw.serdes.edn2 jackdaw.serdes.fressian jackdaw.serdes.fn-impl]] (compile n)))"
+    "-m" "kaocha.runner"]}
+
+  :1.11 {:override-deps {org.clojure/clojure {:mvn/version "1.11.4"}}}
+  :1.12 {:override-deps {org.clojure/clojure {:mvn/version "1.12.5"}}}
+
+  :build
+  {:deps {io.github.clojure/tools.build {:mvn/version "0.10.14"}
+          slipset/deps-deploy {:mvn/version "0.2.5"}}
+   :ns-default build}}}

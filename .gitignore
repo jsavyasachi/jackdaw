@@ -19,4 +19,5 @@ pom.xml.asc
 /examples/*/target
 .clj-kondo/
 .lsp/
-.calva/
+.calva/.cpcache/
+target/
