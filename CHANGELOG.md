@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.3.7] - 2026-07-12
+
+### Changed
+- deps.edn-native build (tools.build; Leiningen via lein-tools-deps).
+
 ### Unreleased
 
 #### Changed
