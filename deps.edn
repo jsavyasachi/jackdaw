@@ -46,7 +46,7 @@
     "(do (.mkdirs (java.io.File. \"target/classes\")) (doseq [n '[jackdaw.serdes.edn2 jackdaw.serdes.fressian jackdaw.serdes.fn-impl]] (compile n)))"
     "-m" "kaocha.runner"]}
 
-  :1.11 {:override-deps {org.clojure/clojure {:mvn/version "1.11.4"}}}
+  :1.11 {:override-deps {org.clojure/clojure {:mvn/version "1.12.5"}}}
   :1.12 {:override-deps {org.clojure/clojure {:mvn/version "1.12.5"}}}
 
   :build
