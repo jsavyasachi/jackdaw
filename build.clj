@@ -21,6 +21,16 @@
   (b/delete {:path "target"})
   (b/delete {:path "pom.xml"}))   ; drop stale lein-generated pom so :pom-data wins
 
+(defn compile-aot
+  "AOT-compile the gen-class serdes into target/classes. Required before
+   `clojure -M:test`: several tests reference these classes by name (e.g. the
+   Kafka `default.key.serde` config wants jackdaw.serdes.EdnSerde), and gen-class
+   only emits the named class under AOT, not on plain require."
+  [_]
+  (b/compile-clj {:basis @basis
+                  :ns-compile aot-nses
+                  :class-dir class-dir}))
+
 (defn jar [_]
   (clean nil)
   (b/compile-clj {:basis @basis

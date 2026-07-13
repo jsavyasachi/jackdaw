@@ -43,7 +43,9 @@ jobs:
           fi
 
       - name: Test
-        run: clojure -M:test
+        run: |
+          clojure -T:build compile-aot
+          clojure -M:test
 
       - name: Deploy to Clojars
         env:
