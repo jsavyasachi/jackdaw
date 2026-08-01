@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.3.8] - 2026-08-01
+
+### Changed
+- Declare Aleph in the pom as an optional dependency so cljdoc can analyze the integration namespaces. It remains non-transitive for consumers.
+
 ## [1.3.7] - 2026-07-12
 
 ### Changed
