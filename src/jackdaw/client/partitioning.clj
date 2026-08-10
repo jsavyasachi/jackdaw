@@ -1,5 +1,5 @@
 (ns jackdaw.client.partitioning
-  "Extras for `jackdaw.client` which help you define record partitioning
+  "Extras for `jackdaw.client` that help you define record partitioning
   schemes as part of a topic's configuration.
 
   The partitioning API provided by Kafka, like the serdes API, leaves
@@ -44,7 +44,7 @@
 (set! *warn-on-reflection* true)
 
 (defn record-key->key-fn
-  "Given a topic config having `:record-key`, parse it,
+  "Given a topic config with `:record-key`, parse it,
   annotating the topic with a `:Lkey-fn` which will simply fetch the
   specified record-key out of any record."
   [{:keys [record-key] :as t}]
@@ -100,7 +100,7 @@
    (jd/->ProducerRecord topic partition timestamp key value headers)))
 
 (defn produce!
-  "Like `#'jackdaw.client/produce!` but used the partitioning machinery
+  "Like `#'jackdaw.client/produce!`, but uses the partitioning machinery
   if possible rather than just building a `ProducerRecord`.
 
   Returns a future which will produce datafied record metadata when

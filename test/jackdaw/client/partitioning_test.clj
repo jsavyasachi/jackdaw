@@ -54,4 +54,4 @@
         (is (= 1 (.partition record)))
         (is (= 0 (.timestamp record)))))))
 
-    ;; TODO how are you actually supposed to inject headers?
+    ;; TODO: How do callers inject headers?

@@ -23,7 +23,7 @@
        r))))
 
 (defn log-until
-  "Given a consumer, a number of MS at which to poll and a duration,
+  "Given a consumer, a number of ms for polling, and a duration,
   returns a lazy sequence of datafied consumer records consumed during
   that period.
 
@@ -51,12 +51,12 @@
 
 ;; FIXME (reid.mckenzie 2018-11-17):
 ;;
-;;   This is the worst possible implementation. Offsets are
+;;   This implementation is inefficient. Offsets are
 ;;   monotonic. Seek to beginning, get the current offsets, seek to
 ;;   the end, get the current offsets, return the sum of the
 ;;   differences.
 ;;
-;;   Consuming all the messages is insane.
+;;   Consuming all messages is inefficient.
 (defn count-messages
   "Consumes all of the messages on a topic to determine the current count"
   [config topic]

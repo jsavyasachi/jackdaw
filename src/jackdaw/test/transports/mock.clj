@@ -19,20 +19,16 @@
 
 (set! *warn-on-reflection* false)
 
-;; Unfortunately the terminology used in the test-machine clashes a bit with
-;; the terminology used by the TopologyTestDriver so this looks a bit
+;; The test-machine and TopologyTestDriver use different terms. This can be
 ;; confusing.
 ;;
-;; While reviewing this code, bear in mind that the test machine has it's
-;; own producer and consumer. The test-machine's producer is for producing
-;; test input. The consumer is for consuming test output. On the other hand
-;; when you feed records into the TopologyTestDriver, they are `ConsumerRecords`
-;; (we're basically injecting the `ConsumerRecord` directly). This logic
-;; is inverted on the other end where the test machine consumes the driver's
-;; output `ProducerRecord`s directly
+;; The test machine has its own producer and consumer. Its producer creates
+;; test input. Its consumer reads test output. When you send records to the
+;; TopologyTestDriver, they are `ConsumerRecords`. The code injects the
+;; `ConsumerRecord` directly. At the other end, the test machine reads the
+;; driver's `ProducerRecord` output directly.
 ;;
-;; For this reason, we try to make things a bit more meaningful by using
-;; terms like "input-record" and "output-record".
+;; The code uses the terms "input-record" and "output-record" for clarity.
 
 (defn set-headers
   "Adds each entry of the `headers` map onto `consumer-record`'s Kafka record

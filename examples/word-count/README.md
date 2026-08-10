@@ -1,13 +1,12 @@
 # Word Count
 
-This is the classic 'word count' example done as a stream processing
-application using the Jackdaw Streams API.
+This example counts words in a stream processing application that uses the
+Jackdaw Streams API.
 
 
 ## Setting up
 
-Before starting, it is recommended to downloand and install the
-Confluent CLI which can be obtained from
+Before you start, download and install the Confluent CLI from
 [https://www.confluent.io/download/](https://www.confluent.io/download/).
 
 To install Clojure:
@@ -16,7 +15,7 @@ To install Clojure:
 
 ## Project structure
 
-The project structure looks like this:
+The project has this structure:
 ```
 tree
 .
@@ -67,7 +66,7 @@ The `word_count_test.clj` file contains a test
 
 ## Running the app
 
-Let's get started! Install the CLI and start the Confluent Platform:
+Install the CLI and start the Confluent Platform:
 ```
 curl -L https://cnfl.io/cli | sh -s -- -b /<path-to-directory>/bin
 <path-to-confluent>/bin/confluent local start
@@ -79,7 +78,7 @@ cd <path-to-jackdaw>/examples/word-count
 clj -A:dev
 ```
 
-You should see output like the following:
+The output is similar to this:
 ```
 Clojure 1.10.1
 user=>
@@ -90,21 +89,20 @@ Enter the following at the `user=>` prompt:
 (reset)
 ```
 
-If you see output like the following, congratulations, the app is
-running!
+The application runs if the output is similar to this:
 ```
 :reloading (word-count user)
 :resumed
 ```
 
-Let's publish a couple of records and see the result:
+Publish two records and get the result:
 ```
 (publish (:input (topic-metadata)) nil "all streams lead to kafka")
 (publish (:input (topic-metadata)) nil "hello kafka streams")
 (get-keyvals (:output (topic-metadata)))
 ```
 
-You should see output like the following:
+The output is similar to this:
 ```
 (["all" 1]
  ["streams" 1]
@@ -116,7 +114,7 @@ You should see output like the following:
  ["streams" 2])
 ```
 
-For an in depth walkthrough, see the comment block in the `word_count.clj` file.
+For a detailed walkthrough, see the comment block in the `word_count.clj` file.
 
 
 ## Running tests

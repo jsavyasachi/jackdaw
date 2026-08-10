@@ -5,7 +5,7 @@
 [![test](https://github.com/jsavyasachi/jackdaw/actions/workflows/test.yml/badge.svg)](https://github.com/jsavyasachi/jackdaw/actions/workflows/test.yml)
 [![Renovate](https://img.shields.io/badge/Renovate-enabled-1A1F6C?style=flat&logo=renovate&logoColor=fff)](https://github.com/jsavyasachi/jackdaw/issues?q=is%3Aissue+Dependency+Dashboard)
 
-Jackdaw is a Clojure library for the Apache Kafka distributed streaming platform. With Jackdaw, you can create and list topics using the AdminClient API, produce and consume records using the Producer and Consumer APIs, and create stream processing applications using the Streams API. Jackdaw also contains functions to serialize and deserialize records as JSON, EDN, and Avro, as well as functions for writing unit and integration tests.
+Jackdaw is a Clojure library for the Apache Kafka distributed streaming platform. With Jackdaw, you can create and list topics with the AdminClient API. You can produce and consume records with the Producer and Consumer APIs. You can create stream processing applications with the Streams API. Jackdaw also contains functions to serialize and deserialize records as JSON, EDN, and Avro, and functions to write unit tests and integration tests.
 
 > **Maintenance fork.** This is a maintained continuation of
 > [`fundingcircle/jackdaw`](https://github.com/fundingcircle/jackdaw) (unmaintained
@@ -32,15 +32,15 @@ deps.edn:
 net.clojars.savya/jackdaw {:mvn/version "1.3.8"}
 ```
 
-Jackdaw resolves Confluent artifacts from the Confluent Maven repository; add
+Jackdaw resolves Confluent artifacts from the Confluent Maven repository. Add
 `https://packages.confluent.io/maven/` to your `:repositories` (Leiningen) or
 `:mvn/repos` (deps.edn).
 
 ## Supported versions
 
 Jackdaw 1.3.6 requires **Clojure >= 1.10**, **JDK 17+**, and **Apache Kafka 4.x** /
-**Confluent Platform 8.x** brokers. (The Clojure floor is set by the `datafy` protocol,
-introduced in 1.10.)
+**Confluent Platform 8.x** brokers. (The `datafy` protocol sets the Clojure floor. Clojure
+1.10 introduced that protocol.)
 
 ## Documentation
 
@@ -79,9 +79,9 @@ clojure -M:test --no-config --focus-meta :integration
 
 ## Related projects
 
-If you want to get more insight about your topologies, you can use the
+To get more information about your topologies, use the
 [Topology Grapher](https://github.com/FundingCircle/topology-grapher) library to generate graphs.
-See [an example using jackdaw](https://github.com/FundingCircle/topology-grapher/blob/master/sample_project/src/jackdaw_topology.clj) to check how to integrate it with your topology.
+See [an example using jackdaw](https://github.com/FundingCircle/topology-grapher/blob/master/sample_project/src/jackdaw_topology.clj) for how to add it to your topology.
 
 ## Releasing
 

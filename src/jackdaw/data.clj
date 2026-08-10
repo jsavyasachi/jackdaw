@@ -33,7 +33,7 @@
              nil
              (datafy [o] o)))))
 
-;;; Just vendor this - not worth the footwork to import the "real" one
+;;; Vendor this. Importing the "real" one gives no benefit.
 ;; Ignore clj-kondo's warning: Unresolved namespace clojure.core.protocols. Are you missing a require?
 #_{:clj-kondo/ignore [:unresolved-namespace]}
 (defn datafy
@@ -55,10 +55,8 @@
                    :clojure.datafy/class (-> x class .getName symbol))
         v))))
 
-;; Helper macro for the fact that every T->data function is really
-;; intended to be a datafy handler. Not intended for general use, just
-;; saves me the trouble of having to remember what I have and haven't
-;; written a Datafiable entry for.
+;; This helper macro makes each T->data function a datafy handler. It is not
+;; for general use. It makes it easier to track Datafiable entries.
 
 (defmacro ^:private defn->data [name & body]
   (let [tag (:tag (meta (ffirst (filter vector? body))))]

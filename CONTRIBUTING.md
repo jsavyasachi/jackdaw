@@ -9,26 +9,25 @@ following DCO + License terms.
 
 [DCO + License][1]
 
-If you discover issues, have ideas for improvements or new features,
-please report them to the [issue tracker][2] of the repository or
-submit a pull request. Please, try to follow these guidelines when you
-do so.
+If you find issues, or have ideas for improvements or new features,
+report them to the [issue tracker][2] of the repository. You can also
+submit a pull request. Follow these guidelines when you do so.
 
 ## Issue reporting
 
-* Check that the issue has not already been reported.
-* Check that the issue has not already been fixed in the latest code
-  (a.k.a. `master`).
-* Open an issue with a descriptive title and a clear, concise and precise statement of the problem
-* Mention any pertinent information about the "stack" you are using
-  (including Kafka broker/client versions)
-* Mention the version (or versions) of Jackdaw you're trying to use
-* Include any relevant code to the issue summary.
+* Make sure that nobody reported the issue before.
+* Make sure that the latest code (`master`) does not contain a fix
+  already.
+* Open an issue with a descriptive title. Give a clear and precise statement of the problem.
+* Give the related information about the stack that you use. Include
+  the Kafka broker version and the client version.
+* Give the version or versions of Jackdaw that you use.
+* Add the related code to the issue summary.
 
-When reporting bugs it's a good idea to go through the [Troubleshooting section
-of the manual][8].  Adding information like the backtrace and any sample messages
-and/or topic configurations used to the bug report makes it easier to track down bugs.
-Some steps to reproduce a bug reliably would also make a huge difference.
+Before you report a bug, read the [Troubleshooting section of the
+manual][8]. Add the backtrace, sample messages, and topic configurations to
+the bug report. This information makes a bug easier to find. Steps that
+reproduce the bug also help.
 
 ## Signoff on Commits
 
@@ -46,16 +45,16 @@ git config format.signoff true
 
 ## Pull requests
 
-* Read [how to properly contribute to open source projects on Github][3].
-* Keep style and feature PRs separate. Feel free to discuss proposals in #jackdaw[9]
-* Make sure that the unit tests are passing (`lein test`).
+* Read [how to contribute to open source projects on Github][3].
+* Keep style pull requests and feature pull requests separate. You can discuss proposals in #jackdaw[9]
+* Make sure that the unit tests pass (`lein test`).
 * Write [good commit messages][4] and sign each commit (`git commit -s -m 'Add foo feature'`).
 * Mention related tickets in the commit messages (e.g. `[Fix #N] Add command ...`).
 * Update the [changelog][7].
 * [Squash related commits together][6].
-* Open a [pull request][5] that relates to *only* one subject with a clear title
-  and description in grammatically correct, complete sentences.
-* [Sign off][10] on all commits, which certifies that you agree to the [DCO + License][1].
+* Open a [pull request][5] that relates to *only* one subject. Write a clear title
+  and a description in complete sentences.
+* [Sign off][10] on all commits. Your signoff certifies that you agree to the [DCO + License][1].
 
 [1]: https://github.com/FundingCircle/jackdaw/tree/master/doc/DCO_+_LICENSE
 [2]: https://github.com/FundingCircle/jackdaw/issues

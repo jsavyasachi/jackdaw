@@ -6,18 +6,13 @@
 
 (set! *warn-on-reflection* false)
 
-;; An example of the problem the watcher is trying to solve
-;; might help.
+;; This example shows the problem that the watcher solves.
 ;;
-;; Lets say some process is adding messages representing
-;; orders, each consisting of a pair (qty, amt). We want
-;; to "watch" the journal until $100 of revenue has been
-;; received and return immediately when it does.
+;; A process adds messages for orders. Each message has a pair (qty, amt). The
+;; test watches the journal until it receives $100 of revenue. It then returns.
 ;;
-;; In the test, we submit the messages ourselves. We want
-;; to assert that `handle-cmd!` only returns *after*
-;; sufficient messages have been sent to satisfy the $100
-;; revenue.
+;; The test sends the messages. It asserts that `handle-cmd!` returns only after
+;; it receives messages for $100 of revenue.
 
 (defn run-watch-cmd [watcher cmd-list]
   (let [journal (agent [])

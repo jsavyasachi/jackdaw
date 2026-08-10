@@ -3,52 +3,48 @@
 ## Rationale
 
 The Jackdaw Client API wraps the core Kafka `Producer`<sup>[1](#producerapi)</sup> and
-`Consumer`<sup>[2](#consumerapi)</sup> APIs and provides functions for building or
-unpacking some of the supporting objects like Callbacks, Serdes, ConsumerRecords etc.
+`Consumer`<sup>[2](#consumerapi)</sup> APIs. It gives functions to build or
+unpack the related objects, such as Callbacks, Serdes, and ConsumerRecords.
 
-Higher level concepts in the Kafka ecosystem like Kafka Streams, Kafka Connect, and KSQL all
-build on these core APIs so acquiring a deep understanding will be rewarded with increased
-understanding of the many associated technologies.
+Kafka Streams, Kafka Connect, and KSQL all build on these core APIs. If you know
+these core APIs well, you also know more about the related technologies.
 
-While Kafka's surface API is quite small, the functionality it provides is deep. You
-can get up and running very quickly with a simple example but to fully understand it's
-capabilities there is no substitute for reading the upstream documentation. The
-scope of this guide is therefore limited to demonstrating how to use API via Jackdaw
-and connecting the reader to the relevant parts of the upstream documentation for
-further reading.
+Kafka's surface API is small, but its functions do much work. You can start
+quickly with a simple example. To learn all of its capabilities, read the
+upstream documentation. This guide shows how to use the API through Jackdaw. It
+also points you to the related parts of the upstream documentation.
 
 ## Producing
 
-The producer example below demonstrates how to use the Kafka Producer API. The configuration<sup>[3](#producerconfig)</sup>
-is represented as a simple map (Jackdaw will convert this to a `Properties` object) and in
-this example, the producer is minimally configured just to illustrate a few
-important options.
+The producer example below shows how to use the Kafka Producer API. The configuration<sup>[3](#producerconfig)</sup>
+is a map. Jackdaw converts the map to a `Properties` object. This example
+configures the producer with a small number of important options.
 
- * "bootstrap.servers=localhost:9092" tells the producer to establish a connection with
-   the kafka broker running on the default port at localhost
+ * "bootstrap.servers=localhost:9092" tells the producer to make a connection to
+   the kafka broker on the default port at localhost
 
- * "client.id=foo" means that the string 'foo' will be used in all requests to brokers so
-   that they can be distinguished by more than just host and IP. It will also form part of
-   name of the metrics reported by both brokers and the producing application itself
+ * "client.id=foo" puts the string 'foo' in all requests to brokers. The brokers
+   can then identify a client by more than the host and the IP. The string is also
+   part of the name of the metrics from the brokers and from the producer application
 
- * "acks=all" means that the leader will wait for the full set of in-sync replicas to
-   acknowledge the result and complete the response. This is the slowest but most durable
-   setting. The default is '1' which means that the leader will respond as soon as the record
-   has been written to it's own log. This allows faster throughput at the cost of reduced
+ * "acks=all" makes the leader wait for the full set of in-sync replicas to
+   acknowledge the result and complete the response. This is the slowest setting,
+   but it is the most durable. The default is '1'. With '1', the leader responds
+   when it writes the record to its own log. This gives more throughput and less
    durability.
 
-Producers are usually created using the `with-open` macro so that they are automatically
-closed either when evaluation reaches the end of the body or an exception is thrown. By
-default, the StringSerializer is used to serialize the key and value provided for inclusion
-in the ProducerRecord that is submitted to the leader and
+Usually you create producers with the `with-open` macro. The macro closes the
+producer at the end of the body, or when the code throws an exception. By
+default, the StringSerializer serializes the key and the value for the
+ProducerRecord that goes to the leader.
 
-Within the body, the `jc/produce!` function is used to request a write to the specified
-Kafka topic. This function returns a delay immediately which can be `deref`'d to wait
-for the result of the Kafka `.send` call which includes metadata like the timestamp
-and offset of the written record.
+In the body, the `jc/produce!` function requests a write to the given
+Kafka topic. The function returns a delay immediately. `deref` the delay to wait
+for the result of the Kafka `.send` call. The result includes metadata such as
+the timestamp and the offset of the record.
 
 The [KafkaProducer javadocs](https://kafka.apache.org/20/javadoc/org/apache/kafka/clients/producer/KafkaProducer.html)
-provide more detailed information about how the producer works behind the scenes.
+give more information about how the producer works.
 
 
 ```
@@ -69,29 +65,28 @@ provide more detailed information about how the producer works behind the scenes
 
 ## Consuming
 
-The consumer example below demonstrates how to use the Kafka Consumer API. The configuration<sup>[5](#consumerconfig)</sup>
-is represented as a simple map (Jackdaw will convert this to a `Properties` object), and in
-this example, the Consumer is minimally configured just to illustrate a few important options
+The consumer example below shows how to use the Kafka Consumer API. The configuration<sup>[5](#consumerconfig)</sup>
+is a map. Jackdaw converts the map to a `Properties` object. This example
+configures the Consumer with a small number of important options.
 
- * "bootstrap.servers=localhost:9092" tells the consumer to establish a connection with
-   the kafka broker running on the default port at localhost
+ * "bootstrap.servers=localhost:9092" tells the consumer to make a connection to
+   the kafka broker on the default port at localhost
 
- * "group.id=foo" means that this consumer is part of the 'foo' consumer group. Other consumers
-   with the same id form a pool of consumers that share the workload providing scalability and
-   fault tolerance
+ * "group.id=foo" makes this consumer a part of the 'foo' consumer group. Other consumers
+   with the same id make a pool of consumers. The pool shares the workload, and gives
+   scalability and fault tolerance
 
-Consumers are usually created using the `with-open` macro so that they are automatically
-closed either when evaluation reaches the end of the body or an exception is thrown. By default
-the StringDeserializer is used to deserialize the key and value before being made available
-in the ConsumerRecord.
+Usually you create consumers with the `with-open` macro. The macro closes the
+consumer at the end of the body, or when the code throws an exception. By default,
+the StringDeserializer deserializes the key and the value for the ConsumerRecord.
 
-The first step is to create a consumer and subscribe it to a list of topics. We can use the `jc/subscribed-consumer` function:
+First, create a consumer and subscribe it to a list of topics. Use the `jc/subscribed-consumer` function:
 ```
 (with-open [consumer (jc/subscribed-consumer consumer-config [topic-config-1 topic-config-2 ...])
 ```
-`subscribed-consumer` takes a `consumer-config` and a vector of `topic-configs` and returns a `consumer` that is subscribed to all of the given topics.
+`subscribed-consumer` takes a `consumer-config` and a vector of `topic-configs`. It returns a `consumer` that subscribes to all of the given topics.
 
-To create a polling loop for the consumer, the main body of a consumer loop might look as follows:
+The main body of a poll loop for the consumer can look as follows:
 
 ```
 (ns consumer-example
@@ -122,17 +117,15 @@ To create a polling loop for the consumer, the main body of a consumer loop migh
     (with-open [consumer (jc/subscribed-consumer consumer-config [topic-config])]
       (poll-and-loop! consumer processing-fn continue?))))
 ```
-Here, we create a consumer and subscribe it to the "foo" topic. The `poll-and-loop` function continuously fetches records every `poll-ms`, processes them with `processing-fn` (app specific) and commits offset after each poll. For a simple sample app using the Client API see examples/rolldice<sup>[7](#clientapiexample)</sup>).
+This code creates a consumer and subscribes it to the "foo" topic. The `poll-and-loop` function fetches records every `poll-ms`. It processes them with `processing-fn` (specific to your application). It commits the offset after each poll. For a sample application that uses the Client API, see examples/rolldice<sup>[7](#clientapiexample)</sup>).
 
-The `jackdaw.client.log/log` function can be useful for testing. It takes a consumer instance that has already been subscribed
-to one or more topics, a polling interval in ms, and optionally a `fuse-fn`, and returns a lazy infinite sequence of "datafied" records in the order
-that they were received by calls to the Consumer's `.poll` method. If `fuse-fn` was provided, it stops after `fuse-fn` returns false, otherwise it keeps polling. In this example, the consumer will see all records written to the "foo"
-topic due to the use of `jc/subscribe`. We just
-write the record to standard out to demonstrate the keys that are available in each record. To
-see what other keys are available, see data/consumer.clj<sup>[6](#consumerdata)</sup>
+The `jackdaw.client.log/log` function is useful for tests. It takes a consumer instance that subscribes
+to one or more topics, a poll interval in ms, and an optional `fuse-fn`. It returns a lazy infinite sequence of "datafied" records. The order is the order of the calls to the Consumer's `.poll` method. With a `fuse-fn`, the sequence stops after `fuse-fn` returns false. Without a `fuse-fn`, the function continues to poll. In this example, `jc/subscribe` makes the consumer see all records in the "foo"
+topic. The code writes each record to standard out to show the keys in each record. For
+the other keys, see data/consumer.clj<sup>[6](#consumerdata)</sup>
 
 The [KafkaConsumer javadocs](https://kafka.apache.org/20/javadoc/org/apache/kafka/clients/consumer/KafkaConsumer.html)
-provide more detailed information about how the consumer works behind the scenes.
+give more information about how the consumer works.
 
 ```
 (ns consumer-example
@@ -157,7 +150,7 @@ provide more detailed information about how the consumer works behind the scenes
     (println "offset: " offset)))
 ```
 
-Note that when using `subscribed-consumer` all topics subscribed to by the consumer must use the same pair of key and value serde instances. This is because the serdes of the first topic from the `topic-configs` vector are used (or if none are provided those from the `consumer-config`), and therefore all topics are expected to be able to use same serdes.
+With `subscribed-consumer`, all subscribed topics must use the same pair of key serde instance and value serde instance. The consumer uses the serdes of the first topic in the `topic-configs` vector. If that topic gives no serdes, the consumer uses the serdes from the `consumer-config`. Thus all topics must be able to use the same serdes.
 
 ## References
 

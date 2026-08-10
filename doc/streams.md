@@ -2,17 +2,19 @@
 
 ## Rationale
 
-The Jackdaw Streams API is a thin wrapper around the underlying Kafka Streams
-DSL. It allows the definition of streaming applications using idiomatic
-Clojure functions rather than the corresponding Java interop.
+The Jackdaw Streams API is a thin wrapper around the Kafka Streams
+DSL. It lets you define streaming applications with idiomatic
+Clojure functions in place of the Java interop.
 
-Kafka Streams may be a good choice if you'd like to apply complex transformations
-or aggregations to one or more data streams that can be made available as Kafka
-topics, and you'd like to make the resulting output highly available.
+Kafka Streams can be a good choice if all of these conditions are true:
 
-If it's just a simple transformation you're after, you might consider
+- You apply complex transformations or aggregations to one or more data streams.
+- The data streams are available as Kafka topics.
+- You must make the output highly available.
+
+For a simple transformation, consider
 [SMT Transforms](https://docs.confluent.io/current/connect/transforms/index.html)
-in combination with Kafka Connect.
+with Kafka Connect.
 
 
 ## Usage

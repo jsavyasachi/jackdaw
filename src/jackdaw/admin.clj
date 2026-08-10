@@ -1,5 +1,5 @@
 (ns jackdaw.admin
-  "Tools for administering or just interacting with a Kafka cluster.
+  "Tools to administer or interact with a Kafka cluster.
 
   Wraps the `AdminClient` API, replacing the Scala admin APIs.
 
@@ -76,8 +76,7 @@
   [^AdminClient client]
   {:pre [(client? client)]}
   (->> @(list-topics* client)
-       ;; We should allow the caller to decide whether they want
-       ;; the result to be sorted or not?
+       ;; Let the caller decide whether to sort the result.
        sort
        (map #(hash-map :topic-name %))))
 

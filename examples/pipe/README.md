@@ -1,16 +1,16 @@
 # Pipe
 
-This tutorial contains a simple stream processing application using Jackdaw and Kafka Streams.
+This tutorial has a stream processing application that uses Jackdaw and Kafka Streams.
 
 ## Setting up
 
-Before starting, it is recommended to install the Confluent Platform CLI which can be obtained from [https://www.confluent.io/download/](https://www.confluent.io/download/).
+Before you start, install the Confluent Platform CLI from [https://www.confluent.io/download/](https://www.confluent.io/download/).
 
 To install Clojure: [https://clojure.org/guides/getting_started](https://clojure.org/guides/getting_started).
 
 ## Project structure
 
-The project structure looks like this:
+The project has this structure:
 ```
 $ tree pipe
 pipe
@@ -26,7 +26,7 @@ pipe
 
 The `deps.edn` file describes the project's dependencies and source paths.
 
-The `system.clj` file contains functions to start, stop, and reset the app. These are required by the `user` namespace for interactive development and should not be invoked directly.
+The `system.clj` file has functions to start, stop, and reset the application. The `user` namespace needs these functions for interactive development. Do not call them directly.
 
 The `pipe.clj` file describes the app and topology. Pipe reads from a Kafka topic called "input", logs the key and value, and writes to a Kafka topic called "output":
 ```
@@ -43,7 +43,7 @@ The `pipe_test.clj` file contains a test.
 
 ## Running the app
 
-Let's get started! Fire up a Clojure REPL and load the `pipe` namespace. Then, start ZooKeeper and Kafka. If these services are already running, you may skip this step:
+Start a Clojure REPL and load the `pipe` namespace. Then start ZooKeeper and Kafka. Skip this step if the services run already:
 ```
 user> (confluent/start)
 INFO zookeeper is up (confluent:288)
@@ -51,7 +51,7 @@ INFO kafka is up (confluent:288)
 nil
 ```
 
-Now, start the app.
+Start the application.
 ```
 user> (start)
 INFO topic 'input' is created (jackdaw.admin.client:288)
@@ -62,13 +62,13 @@ INFO pipe is up (pipe:288)
 
 The `user/start` function creates two Kafka topics needed by Pipe and starts it.
 
-For the full list of topics, type:
+To get the full list of topics, enter:
 ```
 user> (get-topics)
 #{"output" "__confluent.support.metrics" "input"}
 ```
 
-With the app running, place a new record on the input stream:
+When the application runs, write a record to the input stream:
 ```
 user> (publish (topic-config "input") nil "this is a pipe")
 INFO {:key nil, :value "this is a pipe"} (pipe:288)
@@ -82,15 +82,15 @@ user> (get-keyvals (topic-config "output"))
 ((nil "this is a pipe"))
 ```
 
-This concludes this tutorial.
+The tutorial is complete.
 
 ## Interactive development
 
-For interactive development, reload the file and invoke `user/reset`. These stops the app, deletes topics and internal state using a regex, and recreates the topics and restarts the app. The details are in the `system` namespace.
+For interactive development, reload the file and call `user/reset`. It stops the application and deletes topics and internal state with a regex. It then recreates the topics and starts the application. The `system` namespace has the details.
 
 ## Running tests
 
-To run tests, load the `pipe-test` namespace and invoke a test runner using your editor, or from the command line:
+To run tests, load the `pipe-test` namespace. Call a test runner from your editor or the command line:
 ```
 clj -Atest
 ```

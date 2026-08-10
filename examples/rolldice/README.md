@@ -1,6 +1,6 @@
 # Roll dice
 
-This repo contains a simple example app to demonstrate usage of Jackdaw's Client API (Consumer and Producer API). The app rolls a dice `n` number of times where `n` is provided by the user. A Jackdaw Producer writes the numbers to the input topic `rolldice`. A Jackdaw consumer continuously reads from the topic, adds up the numbers and prints out the result. To exit the consumer loop, press Ctr+c.
+This repository contains an example application that uses Jackdaw's Client API (Consumer and Producer API). The application rolls a die `n` times. The user gives `n`. A Jackdaw Producer writes the numbers to the input topic `rolldice`. A Jackdaw consumer reads the topic, adds the numbers, and prints the result. To stop the consumer loop, press Ctrl+C.
 
 ## Installation
 
@@ -8,6 +8,6 @@ Clone this repo.
 
 ## Usage
 
-1. Bring up the Kafka services by running `docker-compose up -d`. Alternatively, run the Kafka services (broker and zookeeper) locally, following instructions in the [Apache Kafka Quickstart](https://kafka.apache.org/quickstart).
+1. Start the Kafka services with `docker-compose up -d`. You can also run the Kafka services (broker and zookeeper) locally. Follow the [Apache Kafka Quickstart](https://kafka.apache.org/quickstart).
 
-2. From the root directory of the repo, run: `lein run`
+2. From the repository root, run `lein run`.

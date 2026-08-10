@@ -2,30 +2,24 @@
 
 ## Rationale
 
-The test machine is what we came up with in an attempt to make it easier to
-write more reliable integration tests. By handling reads and writes in a background
-thread and making them available in a Clojure ref, the test author is relieved
-of the requirement to manually `send!` and `recv` messages from kafka. The initial
-aim was to simply 'fire' events at the system and then observe the outputs that
-are (or are not) collected by the reader. In general, the aims are to allow the
-creation of blackbox integration tests which are:
+The test machine helps you write reliable integration tests. A background thread
+handles reads and writes. A Clojure ref makes them available. The test author does
+not need to manually `send!` and `recv` Kafka messages. The test machine sends events
+to the system and collects output with the reader. It supports blackbox integration tests that are:
 
- * Generative, to avoid manual creation and alteration of test cases (or we will
-not write them, and will eventually abandon them)
- * Reliable, so we trust the results (or we will ignore them)
- * Fast, so we get results quickly (or we will not run them)
+ * Generative, to avoid manual creation and change of test cases.
+ * Reliable, to give results that you can trust.
+ * Fast, to give results quickly.
 
-The test machine also aims to be agnostic to the system it is testing, other
-than that it should get input/output primarily from Kafka.
+The test machine works with any system that gets input and output mainly from Kafka.
 
 ### Construction
 
-The examples below, demonstrate how to create a test machine for executing a
-sequence of "commands". The "local-machine" will execute the commands against a
-local kafka cluster with all services running on their default ports. The
-"remote-machine" in contrast executes commands over HTTP using the configured
-rest-proxy. This can be useful in scenarios where you don't have direct access
-to these services in a shared environment like uat/staging.
+The examples below show how to create a test machine that runs a sequence of
+commands. The "local-machine" runs the commands against a local Kafka cluster.
+All services run on their default ports. The "remote-machine" runs commands over
+HTTP through the configured rest-proxy. Use it when you do not have direct access
+to services in a shared environment, such as UAT or staging.
 
 ```clojure
 (ns my.app-test
@@ -71,30 +65,27 @@ to these services in a shared environment like uat/staging.
 
 ### Serialization/Deserialization
 
-The `topic-config` referenced in the snippet above is a mapping from topic-ids to
-serialization/deserialization configurations. This means that tests can read/write
-using the same serializers/deserializers used by your applications. So for example, on
-encountering a command like
+The `topic-config` in the example maps topic-ids to serialization and deserialization
+configurations. Tests can read and write with the serializers and deserializers that
+your applications use. For example, a command such as
 
 ```clojure
 [:write! :foo {:id 1, :msg "hello"}]
 ```
 
-the test-machine will lookup `:foo` in the topic-config to get the `:key-serde`
-and `:value-serde` which it will then use when writing the message. Similarly, all topics
-listed in the topic-config are read using the corresponding deserializer.
+causes the test-machine to look up `:foo` in the topic-config. It gets the `:key-serde`
+and `:value-serde`, then uses them to write the message. The test machine reads each
+topic in the topic-config with its related deserializer.
 
 ### Lifecycle
 
-The test-machine implements the `Closeable` protocol so be sure to use it in
-conjunction with `with-open` to ensure that associated resources are shut down
-cleanly when you are finished with a machine.
+The test-machine implements the `Closeable` protocol. Use it with `with-open` to
+make sure that it closes related resources when you finish with a machine.
 
 ### Test Commands
 
-Each test-command is a vector with the first item being a keyword representing the
-type of operation this command represents, and subsequent items being command
-specific arguments. Currently the following commands are the supported.
+Each test-command is a vector. The first item is a keyword for the operation. The
+remaining items are arguments for that command. The test machine supports these commands.
 
 ```clojure
   :write!   [topic-id msg opts]  Writes a message to the topic (Opts supports :key-fn, :partition, :partition-fn, :key, :timeout)
@@ -115,34 +106,33 @@ specific arguments. Currently the following commands are the supported.
                                  function of a single argument. This function will
                                  be passed the entire test machine state.
 ```
-For more details see the functions in the [jackdaw.test.commands](https://cljdoc.org/d/fundingcircle/jackdaw/CURRENT/api/jackdaw.test.commands) namespace.
+For more details, see the functions in the [jackdaw.test.commands](https://cljdoc.org/d/fundingcircle/jackdaw/CURRENT/api/jackdaw.test.commands) namespace.
 
 ### Test Results
 
-A `test-machine` is used in conjunction with `run-test`, which runs a sequence of test commands against the test-machine. The first parameter to `run-test` is a test-machine and the second is a list of commands to execute. The return value from `run-test` is a map with just two keys
+Use a `test-machine` with `run-test`. The function runs a sequence of test commands
+against the test-machine. Its first parameter is a test-machine. Its second parameter is
+a list of commands. `run-test` returns a map with two keys:
 
 ```clojure
 :results   A sequence of execution results. One for each command attempted
 :journal   A snapshot of all kafka output read by the test consumer
 ```
 
-The journal contains all output written to the topics configured when creating
-the test-machine (including any input messages). Each key in the journal
-represents one topic. The value is a vector of messages observed on the topic
-in the order that they were observed.
+The journal contains all output written to the configured topics, including input
+messages. Each journal key represents one topic. Its value is a vector of messages
+from that topic in the order that the consumer observes them.
 
 ### Fixtures
 
-A selection of fixtures are provided to help setting up required topics and
-to start the applications, and external systems under test. For more details
-see the functions in the [jackdaw.test.fixtures](https://cljdoc.org/d/fundingcircle/jackdaw/CURRENT/api/jackdaw.test.fixtures) namespace.
+The library provides fixtures to set up required topics and to start applications
+and external systems under test. For more details, see the functions in the
+[jackdaw.test.fixtures](https://cljdoc.org/d/fundingcircle/jackdaw/CURRENT/api/jackdaw.test.fixtures) namespace.
 
 ### Wrapping up
 
-You may find it helpful to write a function to tie it all together and invoke
-your test function `f` with a machine after performing any setup required. Since
-this typically involves some knowledge of the system under test, it's likely
-better that you write this macro yourself so that you can tailor it to your own
+You can write a function that runs setup and then calls your test function `f` with
+a machine. This setup depends on the system under test. Write this macro for your
 requirements.
 
 ```clojure
@@ -185,4 +175,8 @@ requirements.
       (f machine))))
 ```
 
-The `topic-fixture` function creates all the topics named in the supplied `topic-config` before running tests. You have to import `TopologyTestDriver` for `test-machine` to work, which requires you to bring in the `org.apache.kafka/kafka-streams-test-utils` library as a dependency, using a version within `2.0.0` - `2.3.0`. The `topic-fixture` expects the `topic-config` to contain `:partition-count` and `:replication-factor` to be present, besides the `topic-name` and key-value serdes.
+The `topic-fixture` function creates the topics named in `topic-config` before tests run.
+Import `TopologyTestDriver` for `test-machine` to work. Add the
+`org.apache.kafka/kafka-streams-test-utils` library as a dependency. Use a version from
+`2.0.0` to `2.3.0`. The `topic-config` must contain `:topic-name`, `:partition-count`,
+`:replication-factor`, and key-value serdes.
