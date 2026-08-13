@@ -21,3 +21,4 @@ pom.xml.asc
 .lsp/
 .calva/.cpcache/
 target/
+release-notes.md
