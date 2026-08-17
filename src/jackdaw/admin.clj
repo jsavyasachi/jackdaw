@@ -10,7 +10,8 @@
    [jackdaw.data :as jd]
    [manifold.deferred :as d])
   (:import [java.util Collection Properties]
-           [org.apache.kafka.clients.admin AdminClient AlterConfigsResult
+           [org.apache.kafka.clients.admin AdminClient AlterConfigOp
+            AlterConfigOp$OpType AlterConfigsResult
             DescribeTopicsOptions DescribeClusterOptions DescribeConfigsOptions]))
 
 (set! *warn-on-reflection* true)
@@ -176,7 +177,11 @@
                       (map? topic-config)]}
                [(jd/->ConfigResource jd/+topic-config-resource-type+
                                      topic-name)
-                (jd/map->Config topic-config)]))
+                (map (fn [[key value]]
+                       (AlterConfigOp.
+                        (jd/->ConfigEntry key value)
+                        AlterConfigOp$OpType/SET))
+                     topic-config)]))
         topics))
 
 (defn alter-topic-config!
