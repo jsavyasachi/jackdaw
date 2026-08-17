@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.3.9] - 2026-08-17
+
+### Fixed
+
+- `produce!` sends the caller's key in every keyed arity. It previously sent
+  the topic map as the record key, so those messages were partitioned on the
+  wrong key.
+- `alter-topic-config!` builds `AlterConfigOp` entries for
+  `incrementalAlterConfigs`, fixing topic config alteration on Kafka 4.x.
+
 ## [1.3.8] - 2026-08-01
 
 ### Changed
