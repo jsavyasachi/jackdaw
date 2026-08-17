@@ -9,6 +9,13 @@ permissions:
   contents: read
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: borkdude/setup-clj-kondo@v1
+      - run: clj-kondo --lint src test
+
   test:
     runs-on: ubuntu-latest
     strategy:
