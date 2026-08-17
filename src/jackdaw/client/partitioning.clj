@@ -108,15 +108,15 @@
   ([producer topic value]
    (jc/send! producer
              (->ProducerRecord producer topic value)))
-  ([producer topic _key value]
+  ([producer topic key value]
    (jc/send! producer
-             (->ProducerRecord producer topic value)))
-  ([producer topic partition _key value]
+             (->ProducerRecord producer topic key value)))
+  ([producer topic partition key value]
    (jc/send! producer
-             (->ProducerRecord producer topic partition topic value)))
-  ([producer topic partition timestamp _key value]
+             (->ProducerRecord producer topic partition key value)))
+  ([producer topic partition timestamp key value]
    (jc/send! producer
-             (->ProducerRecord producer topic partition timestamp topic value)))
-  ([producer topic partition timestamp _key value headers]
+             (->ProducerRecord producer topic partition timestamp key value)))
+  ([producer topic partition timestamp key value headers]
    (jc/send! producer
-             (->ProducerRecord producer topic partition timestamp topic value headers))))
+             (->ProducerRecord producer topic partition timestamp key value headers))))

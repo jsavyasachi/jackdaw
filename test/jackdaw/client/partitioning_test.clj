@@ -55,3 +55,50 @@
         (is (= 0 (.timestamp record)))))))
 
     ;; TODO: How do callers inject headers?
+
+(deftest produce!-with-key-preserves-caller-key
+  (let [sent-record (atom nil)
+        topic {:topic-name "foo"}
+        key "caller-key"]
+    (with-redefs [client/send! (fn [_producer record]
+                                 (reset! sent-record record))]
+      (part/produce! nil topic key "value"))
+    (is (= key (.key @sent-record)))))
+
+(deftest produce!-with-partition-preserves-caller-key-and-partition
+  (let [sent-record (atom nil)
+        topic {:topic-name "foo"}
+        partition 2
+        key "caller-key"]
+    (with-redefs [client/send! (fn [_producer record]
+                                 (reset! sent-record record))]
+      (part/produce! nil topic partition key "value"))
+    (is (= key (.key @sent-record)))
+    (is (= partition (.partition @sent-record)))))
+
+(deftest produce!-with-partition-and-timestamp-preserves-caller-key
+  (let [sent-record (atom nil)
+        topic {:topic-name "foo"}
+        partition 2
+        timestamp 42
+        key "caller-key"]
+    (with-redefs [client/send! (fn [_producer record]
+                                 (reset! sent-record record))]
+      (part/produce! nil topic partition timestamp key "value"))
+    (is (= key (.key @sent-record)))
+    (is (= partition (.partition @sent-record)))
+    (is (= timestamp (.timestamp @sent-record)))))
+
+(deftest produce!-with-headers-preserves-caller-key
+  (let [sent-record (atom nil)
+        topic {:topic-name "foo"}
+        partition 2
+        timestamp 42
+        key "caller-key"
+        headers (org.apache.kafka.common.header.internals.RecordHeaders.)]
+    (with-redefs [client/send! (fn [_producer record]
+                                 (reset! sent-record record))]
+      (part/produce! nil topic partition timestamp key "value" headers))
+    (is (= key (.key @sent-record)))
+    (is (= partition (.partition @sent-record)))
+    (is (= timestamp (.timestamp @sent-record)))))

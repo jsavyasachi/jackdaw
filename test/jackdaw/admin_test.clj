@@ -6,7 +6,8 @@
    [manifold.deferred :as d])
   (:import
    (org.apache.kafka.common Node KafkaFuture)
-   (org.apache.kafka.clients.admin MockAdminClient)))
+   (org.apache.kafka.clients.admin AlterConfigOp AlterConfigOp$OpType
+                                  MockAdminClient)))
 
 (set! *warn-on-reflection* false)
 
@@ -144,6 +145,22 @@
                     client (map #(update % :replication-factor inc)
                                 [foo bar]))
                    first)))))))
+
+(deftest topics->configs-builds-set-operations
+  (let [configs (#'admin/topics->configs
+                 [{:topic-name "foo"
+                   :topic-config {"cleanup.policy" "compact"
+                                  "retention.ms" "60000"}}])
+        [resource operations] (first configs)]
+    (is (= "foo" (.name resource)))
+    (is (instance? java.util.Collection operations))
+    (is (every? #(instance? AlterConfigOp %) operations))
+    (is (= #{["cleanup.policy" "compact" AlterConfigOp$OpType/SET]
+             ["retention.ms" "60000" AlterConfigOp$OpType/SET]}
+           (set (map (fn [^AlterConfigOp operation]
+                       (let [entry (.configEntry operation)]
+                         [(.name entry) (.value entry) (.opType operation)]))
+                     operations))))))
 
 (deftest test-broker-config
   (with-mock-admin-client test-cluster
